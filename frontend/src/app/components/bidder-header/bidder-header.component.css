@@ -1,0 +1,45 @@
+.bidder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.bidder-header h1 {
+  font-size: 28px;
+  color: #1a2a3a;
+  margin: 0;
+  font-weight: 600;
+}
+
+.add-btn {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-btn:hover {
+  background: #0052a3;
+}
+
+.single-bidder-info {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .bidder-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+}

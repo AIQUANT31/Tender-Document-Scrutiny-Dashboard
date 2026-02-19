@@ -1,0 +1,51 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <div class="signup-header">
+
+       <!-- sign up page -->
+      <h2>Create Account</h2>
+      <p>Sign up to get started</p>
+    </div>
+    
+    <form (ngSubmit)="signup()" class="signup-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+          <input   type="text" id="username"   placeholder="Choose a username"  [(ngModel)]="username" name="username"  required>
+      </div>
+
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          placeholder="Enter your email" 
+          [(ngModel)]="email" 
+          name="email" 
+          required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          placeholder="Create a password" 
+          [(ngModel)]="password" 
+          name="password" 
+          required>
+      </div>
+      
+      <button type="submit" class="signup-btn">Sign Up </button>
+    </form>
+    
+    <!-- Message display -->
+    <div *ngIf="message" [class.success]="isSuccess" [class.error]="!isSuccess" class="message">
+      {{ message }}
+    </div>
+    
+    <div class="login-link">
+      <p>Already have an account? <a routerLink="/login">Login </a></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<div class="bidder-stats" *ngIf="bidders.length > 0">
+  <div class="stat-card">
+    <span class="stat-number">{{ bidders[0].companyName }}</span>
+    <span class="stat-label">Company Name</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number">{{ bidders[0].status }}</span>
+    <span class="stat-label">Status</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number">{{ bidders[0].totalBids || 0 }}</span>
+    <span class="stat-label">Total Bids</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number">{{ bidders[0].winningBids || 0 }}</span>
+    <span class="stat-label">Winning Bids</span>
+  </div>
+</div>

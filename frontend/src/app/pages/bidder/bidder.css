@@ -1,0 +1,55 @@
+/* Bidder Page Container */
+.bidder-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.bidder-content {
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #888;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+/* Add Button */
+.add-btn {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-btn:hover {
+  background: #0052a3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bidder-content {
+    padding: 20px;
+  }
+}

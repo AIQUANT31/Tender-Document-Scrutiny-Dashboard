@@ -1,0 +1,68 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <button class="sidebar-toggle" (click)="toggleSidebar()">
+      <span class="hamburger"></span>
+    </button>
+    <img src="/logo.webp" alt="Logo" class="brand-logo">
+  </div>
+
+  <div class="navbar-menu">
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+    <a routerLink="/tender" routerLinkActive="active" class="nav-link">Tenders</a>
+    <a routerLink="/bidder" routerLinkActive="active" class="nav-link">Bidders</a>
+  </div>
+
+  <div class="navbar-profile">
+    <div class="profile-dropdown" (click)="profileOpen = !profileOpen">
+      <div class="profile-icon">
+        <span>{{ username.charAt(0).toUpperCase() }}</span>
+      </div>
+      <span class="profile-name">{{ username }}</span>
+      <span class="dropdown-arrow">▼</span>
+    </div>
+    <div class="dropdown-menu" *ngIf="profileOpen">
+      <button class="dropdown-item" (click)="openProfileUpdate()">
+        Edit Profile
+      </button>
+      <button class="dropdown-item logout" (click)="logout()">
+        Logout
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<div class="sidebar" [class.sidebar-open]="sidebarOpen">
+  <div class="sidebar-header">
+    <img src="/logo.webp" alt="Logo" class="brand-logo">
+    <button class="sidebar-close" (click)="closeSidebar()">×</button>
+  </div>
+  <div class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" class="sidebar-link" (click)="closeSidebar()">
+      Dashboard
+    </a>
+    <a routerLink="/tender" routerLinkActive="active" class="sidebar-link" (click)="closeSidebar()">
+      Tenders
+    </a>
+    <a routerLink="/bidder" routerLinkActive="active" class="sidebar-link" (click)="closeSidebar()">
+      Bidders
+    </a>
+    <button class="sidebar-link" (click)="openProfileUpdate(); closeSidebar()">
+      Edit Profile
+    </button>
+    <button class="sidebar-link logout" (click)="logout(); closeSidebar()">
+      Logout
+    </button>
+  </div>
+</div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" [class.overlay-visible]="sidebarOpen" (click)="closeSidebar()"></div>
+
+<!-- Profile Update Modal -->
+<app-profile-update
+  [isOpen]="showProfileUpdate"
+  [userId]="userId"
+  (onCancel)="closeProfileUpdate()"
+  (onSave)="onProfileSave()">
+</app-profile-update>

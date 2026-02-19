@@ -1,0 +1,65 @@
+/* Dashboard Actions Component Styles */
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.quick-actions h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.action-btn.primary {
+  background: #0066cc;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #0052a3;
+}
+
+.action-btn.secondary {
+  background: #f3f4f6;
+  color: #333;
+}
+
+.action-btn.secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

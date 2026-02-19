@@ -1,0 +1,185 @@
+<div class="tender-detail-overlay" (click)="close()">
+  <div class="tender-detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ tender?.name }}</h2>
+      <button class="close-btn" (click)="close()">×</button>
+    </div>
+
+    <div class="modal-body" *ngIf="tender">
+      <div class="detail-section">
+        <h3>Description</h3>
+        <p>{{ tender.description || 'No description available' }}</p>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Category</span>
+        <span class="detail-value">{{ getCategoryDisplayName() }}</span>
+      </div>
+
+      <div class="detail-row" *ngIf="tender.userType">
+        <span class="detail-label">User Type</span>
+        <span class="detail-value">
+          <span class="user-type-badge" [ngClass]="tender.userType.toLowerCase()">{{ tender.userType }}</span>
+        </span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Budget</span>
+        <span class="detail-value">₹{{ tender.budget | number:'1.2-2' }}</span>
+      </div>
+
+      <div class="detail-row" *ngIf="tender.openingDate">
+        <span class="detail-label">Opening Date</span>
+        <span class="detail-value">{{ tender.openingDate | date:'medium' }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Deadline</span>
+        <span class="detail-value">{{ tender.deadline ? (tender.deadline | date:'medium') : 'Not set' }}</span>
+      </div>
+
+      <div class="detail-row" *ngIf="tender.location">
+        <span class="detail-label">Location</span>
+        <span class="detail-value">{{ tender.location }}</span>
+      </div>
+
+      <div class="detail-row" *ngIf="tender.contactNumber">
+        <span class="detail-label">Contact</span>
+        <span class="detail-value">
+          {{ tender.contactNumber }}
+          <span *ngIf="tender.isWhatsapp" class="whatsapp-badge">WhatsApp</span>
+        </span>
+      </div>
+
+      <div class="detail-section" *ngIf="getRequiredDocumentsList().length > 0">
+        <h3>Required Documents</h3>
+        <ul class="documents-list">
+          <li *ngFor="let doc of getRequiredDocumentsList()">{{ doc }}</li>
+        </ul>
+      </div>
+
+      <!-- Bid Section - Only show if tender is open (considering deadline) -->
+      <div class="bid-section" *ngIf="getTenderStatus() === 'OPEN'">
+        <button 
+          *ngIf="!isCreator() && !hasExistingBid" 
+          class="btn btn-primary bid-btn" 
+          (click)="openBidForm()">
+          Place Bid
+        </button>
+        
+        <div *ngIf="hasExistingBid" class="bid-status">
+          <span class="bid-placed">✓ You have already placed a bid on this tender</span>
+        </div>
+        
+        <div *ngIf="isCreator()" class="bid-info">
+          <span>You cannot bid on your own tender</span>
+        </div>
+        
+      
+        <button 
+          *ngIf="isCreator()" 
+          class="btn btn-info view-bids-btn" 
+          (click)="openBids()">
+          View Bids ({{ bidCount }})
+        </button>
+      </div>
+
+
+      <div class="bid-section closed-tender" *ngIf="getTenderStatus() === 'CLOSED'">
+        <span class="closed-message"> This tender is closed. Bids are no longer accepted.</span>
+
+        <button 
+          *ngIf="isCreator()" 
+          class="btn btn-info view-bids-btn" 
+          (click)="openBids()">
+          View Bids ({{ bidCount }})
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        *ngIf="isCreator()" 
+        class="btn btn-danger" 
+        (click)="deleteTender()">
+        Delete
+      </button>
+      <button class="btn btn-secondary" (click)="close()">Close</button>
+    </div>
+  </div>
+
+  <!-- Bid Form Modal -->
+  <div class="bid-form-overlay" *ngIf="showBidForm" (click)="closeBidForm()">
+    <div class="bid-form-modal" (click)="$event.stopPropagation()">
+      <div class="bid-form-header">
+        <h3>Place Your Bid</h3>
+        <button class="close-btn" (click)="closeBidForm()">×</button>
+      </div>
+      
+      <div class="bid-form-body">
+        <div class="bid-error" *ngIf="bidError">{{ bidError }}</div>
+        
+        <!-- Loading bidder profile -->
+        <div class="loading" *ngIf="loadingProfiles">
+          Loading your bidder profile...
+        </div>
+        
+        <!-- Bidder Profile Info -->
+        <div class="bidder-info" *ngIf="!loadingProfiles && bidderProfiles.length > 0">
+          <p>Bidding as: <strong>{{ bidderProfiles[0]?.companyName }}</strong> ({{ bidderProfiles[0]?.type }})</p>
+        </div>
+        
+        <!-- No bidder profile - show warning and link -->
+        <div class="no-bidder-warning" *ngIf="!loadingProfiles && bidderProfiles.length === 0">
+          <p> You don't have any bidder profile. Please create one first.</p>
+          <a href="/bidder" class="btn btn-primary">Go to Bidder Management</a>
+        </div>
+        
+        <!-- Bid Form Fields (only show if bidder profile exists) -->
+        <ng-container *ngIf="bidderProfiles.length > 0 && !loadingProfiles">
+          <div class="form-group">
+            <label for="bidAmount">Bid Amount (₹) *</label>
+          <input 
+            type="number" 
+            id="bidAmount" 
+            [(ngModel)]="bidAmount" 
+            placeholder="Enter your bid amount"
+            min="1"
+            step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="proposalText">Proposal / Description</label>
+          <textarea 
+            id="proposalText" 
+            [(ngModel)]="proposalText" 
+            placeholder="Describe your proposal..."
+            rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="contactNumber">Contact Number</label>
+          <input 
+            type="tel" 
+            id="contactNumber" 
+            [(ngModel)]="contactNumber" 
+            placeholder="Enter contact number">
+        </div>
+         
+        
+        <div class="bid-form-actions">
+          <button class="btn btn-secondary" (click)="closeBidForm()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitBid()">Submit Bid</button>
+        </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Bids Modal for Tender Creator -->
+  <app-tender-bids 
+    *ngIf="showBids && tender" 
+    [tender]="tender"
+    (onClose)="closeBids()">
+  </app-tender-bids>
+</div>

@@ -1,0 +1,63 @@
+<!-- Recent Activity Row -->
+<div class="recent-activity-row">
+  <!-- Recent Tenders -->
+  <div class="recent-card">
+    <div class="card-header">
+      <h3>Recent Tenders</h3>
+      <a routerLink="/tender" class="view-all">View All →</a>
+    </div>
+    <div class="recent-list" *ngIf="recentTenders.length > 0; else noTenders">
+      <div class="recent-item" *ngFor="let tender of recentTenders">
+        <div class="item-info">
+          <h4>{{ tender.name }}</h4>
+          <p class="item-meta">Budget: {{ tender.budget }} | {{ tender.createdAt }}</p>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(tender.status)">{{ tender.status }}</span>
+      </div>
+    </div>
+    <ng-template #noTenders>
+      <p class="no-data">No tenders found</p>
+    </ng-template>
+  </div>
+
+ 
+  <!-- Recent Bidders -->
+  <div class="recent-card">
+    <div class="card-header">
+      <h3>Recent Bidders</h3>
+      <!-- <a routerLink="/bidder" class="view-all">View All →</a> -->
+    </div>
+    <div class="recent-list" *ngIf="recentBidders.length > 0; else noBidders">
+      <div class="recent-item" *ngFor="let bidder of recentBidders">
+        <div class="item-info">
+          <h4>{{ bidder.companyName }}</h4>
+          <p class="item-meta">{{ bidder.email }} | {{ bidder.totalBids }} bids</p>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(bidder.status)">{{ bidder.status }}</span>
+      </div>
+    </div>
+    <ng-template #noBidders>
+      <p class="no-data">No bidders found</p>
+    </ng-template>
+  </div>
+   <!-- Recent Bids -->
+  <div class="recent-card">
+    <div class="card-header">
+      <h3>Recent Bids</h3>
+      <!-- <a routerLink="/place-bid" class="view-all">View All →</a> -->
+    </div>
+    <div class="recent-list" *ngIf="recentBids.length > 0; else noBids">
+      <div class="recent-item" *ngFor="let bid of recentBids">
+        <div class="item-info">
+          <h4>{{ bid.tenderName }}</h4>
+          <p class="item-meta">Amount: {{ bid.bidAmount }} | {{ bid.createdAt }}</p>
+        </div>
+        <!-- <span class="status-badge" [ngClass]="getStatusClass(bid.status)">{{ bid.status }}</span> -->
+      </div>
+    </div>
+    <ng-template #noBids>
+      <p class="no-data">No bids found</p>
+    </ng-template>
+  </div>
+
+</div>

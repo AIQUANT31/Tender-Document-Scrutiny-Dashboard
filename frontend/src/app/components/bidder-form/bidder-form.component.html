@@ -1,0 +1,66 @@
+<!-- Bidder Form Modal -->
+<div class="modal-overlay" *ngIf="showBidderForm" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Edit Bidder' : 'Add New Bidder' }}</h2>
+      <button class="close-btn" (click)="onCancel()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="companyName">Company Name *</label>
+          <input type="text" id="companyName" [(ngModel)]="formData.companyName" 
+                 name="companyName" required placeholder="Enter company name">
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" [(ngModel)]="formData.email" 
+                 name="email" required placeholder="Enter email address">
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" [(ngModel)]="formData.phone" 
+                 name="phone" placeholder="Enter phone number">
+        </div>
+        
+        <div class="form-group">
+          <label for="type">Type</label>
+          <select id="type" [(ngModel)]="formData.type" name="type">
+            <option value="Construction">Construction</option>
+            <option value="Infrastructure">Infrastructure</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Contractors">Contractors</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="contactPerson">Contact Person</label>
+          <input type="text" id="contactPerson" [(ngModel)]="formData.contactPerson" 
+                 name="contactPerson" placeholder="Enter contact person name">
+        </div>
+        
+        <div class="form-group">
+          <label for="address">Address</label>
+          <textarea id="address" [(ngModel)]="formData.address" 
+                    name="address" placeholder="Enter address" rows="2"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" [(ngModel)]="formData.status" name="status">
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <!-- <option value="PENDING">Pending</option> -->
+          </select>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" (click)="onCancel()">Cancel</button>
+          <button type="submit" class="submit-btn">{{ isEditing ? 'Update' : 'Create' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

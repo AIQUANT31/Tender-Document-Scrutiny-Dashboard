@@ -1,0 +1,78 @@
+<!-- Bidder View Details Modal -->
+<div class="bid-detail-overlay" *ngIf="showBidderDetail && selectedBidder" (click)="onClose()">
+  <div class="bid-detail-modal" (click)="$event.stopPropagation()">
+    <div class="bid-detail-header">
+      <h2> Bidder Details</h2>
+      <button class="close-btn" (click)="onClose()">×</button>
+    </div>
+    <div class="bid-detail-content">
+      <!-- Company Information -->
+      <div class="detail-section">
+        <h3> Company Information</h3>
+        <div class="detail-grid">
+          <div class="detail-row highlight">
+            <span class="label">Company Name:</span>
+            <span class="value company">{{ selectedBidder.companyName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ selectedBidder.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Phone:</span>
+            <span class="value">{{ selectedBidder.phone || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Type:</span>
+            <span class="value">{{ selectedBidder.type || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Details -->
+      <div class="detail-section">
+        <h3> Contact Details</h3>
+        <div class="detail-grid">
+          <div class="detail-row">
+            <span class="label">Contact Person:</span>
+            <span class="value">{{ selectedBidder.contactPerson || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Address:</span>
+            <span class="value">{{ selectedBidder.address || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status & Performance -->
+      <div class="detail-section">
+        <h3> Status & Performance</h3>
+        <div class="detail-grid">
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="value">
+              <span class="status-badge" [ngClass]="selectedBidder.status.toLowerCase()">{{ selectedBidder.status }}</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total Bids:</span>
+            <span class="value stats">{{ selectedBidder.totalBids || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Winning Bids:</span>
+            <span class="value stats winning">{{ selectedBidder.winningBids || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Created At:</span>
+            <span class="value">{{ selectedBidder.createdAt ? (selectedBidder.createdAt | date:'medium') : 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="bid-detail-actions">
+      <button class="action-btn close-action" (click)="onClose()">Close</button>
+    </div>
+  </div>
+</div>
