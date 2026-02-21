@@ -14,13 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * OCR Service using Tesseract to extract text from PDFs
- * Handles:
- * ✔ Text PDFs
- * ✔ Scanned PDFs
- * ✔ Image-converted PDFs
- */
+
 @Service
 public class OcrService {
 
@@ -66,17 +60,15 @@ public class OcrService {
         }
     }
 
-    /**
-     * Public method used by validation logic
-     * CRITICAL: Reads InputStream only once to avoid stream consumption issues
-     */
+    
+    
     public String extractText(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return "Error: Empty file";
         }
 
         try {
-            // Read bytes ONCE and reuse for both PDF text extraction and OCR
+           
             byte[] pdfBytes;
             try {
                 pdfBytes = file.getInputStream().readAllBytes();
@@ -92,11 +84,10 @@ public class OcrService {
             
             logger.debug("Read {} bytes from file: {}", pdfBytes.length, file.getOriginalFilename());
 
-            // Try to extract embedded text first
             String pdfText = extractPdfTextFromBytes(pdfBytes);
             logger.info("PDFBox Text Length: {}", pdfText != null ? pdfText.length() : 0);
 
-            // If text is sufficient → return directly
+          
             if (pdfText != null && pdfText.trim().length() > 30) {
                 logger.info("Sufficient text extracted, skipping OCR");
                 return pdfText;
@@ -117,9 +108,7 @@ public class OcrService {
         }
     }
 
-    /**
-     * Extract embedded text (text-based PDFs) from byte array
-     */
+    
     private String extractPdfTextFromBytes(byte[] pdfBytes) {
         try {
             if (pdfBytes == null || pdfBytes.length == 0) {
@@ -148,11 +137,7 @@ public class OcrService {
         }
     }
 
-    /**
-     * OCR fallback using PDFRenderer (MOST RELIABLE)
-     * This is especially important for image-converted PDFs
-     * Uses byte array to avoid InputStream issues
-     */
+    
     private String extractTextWithOcrFromBytes(byte[] pdfBytes) {
         StringBuilder fullText = new StringBuilder();
 
@@ -208,20 +193,14 @@ public class OcrService {
         return result;
     }
     
-    /**
-     * Get page count without loading full document (for logging)
-     */
+   
     private int getPageCount(byte[] pdfBytes) {
         try (PDDocument doc = Loader.loadPDF(pdfBytes)) {
             return doc.getNumberOfPages();
         } catch (Exception e) {
-            return -1; // Unknown
+            return -1; 
         }
     }
-
-    /**
-     * Perform OCR on image
-     */
     private String performOcr(BufferedImage image) {
         try {
             return tesseract.doOCR(image);
@@ -231,9 +210,6 @@ public class OcrService {
         }
     }
 
-    /**
-     * Health check
-     */
     public boolean isInitialized() {
         return tessDataPath != null;
     }

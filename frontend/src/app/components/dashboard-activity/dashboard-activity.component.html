@@ -12,7 +12,7 @@
           <h4>{{ tender.name }}</h4>
           <p class="item-meta">Budget: {{ tender.budget }} | {{ tender.createdAt }}</p>
         </div>
-        <span class="status-badge" [ngClass]="getStatusClass(tender.status)">{{ tender.status }}</span>
+        <span class="status-badge" [ngClass]="getStatusClass(tender.status)">{{ tender.status}}</span>
       </div>
     </div>
     <ng-template #noTenders>

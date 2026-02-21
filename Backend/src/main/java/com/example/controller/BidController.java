@@ -2,8 +2,8 @@ package com.example.controller;
 
 import com.example.dto.BidRequest;
 import com.example.dto.BidWithBidderResponse;
-import com.example.dto.DocumentValidationRequest;
 import com.example.dto.DocumentValidationResponse;
+import com.example.dto.ValidationResult;
 import com.example.entity.Bid;
 import com.example.services.BidService;
 import com.example.services.DocumentValidationService;
@@ -30,54 +30,7 @@ public class BidController {
     @Autowired
     private DocumentValidationService documentValidationService;
 
-    /**
-     * Validate uploaded documents against required documents
-     * Uses rule-based keyword matching
-     */
-    @PostMapping("/validate-documents")
-    public ResponseEntity<DocumentValidationResponse> validateDocuments(
-            @RequestBody DocumentValidationRequest request) {
-        
-        DocumentValidationService.ValidationResult result = 
-            documentValidationService.validateDocuments(
-                request.getRequiredDocuments(), 
-                request.getUploadedFileNames()
-            );
-        
-        DocumentValidationResponse response = new DocumentValidationResponse();
-        response.setValid(result.isValid());
-        response.setMessage(result.getMessage());
-        response.setMatchedDocuments(result.getMatchedDocuments());
-        response.setMissingDocuments(result.getMissingDocuments());
-        response.setWarnings(result.getWarnings());
-        response.setDuplicateDocuments(result.getDuplicateDocuments());
-        
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Validate documents using fuzzy matching (more lenient)
-     */
-    @PostMapping("/validate-documents-fuzzy")
-    public ResponseEntity<DocumentValidationResponse> validateDocumentsFuzzy(
-            @RequestBody DocumentValidationRequest request) {
-        
-        DocumentValidationService.ValidationResult result = 
-            documentValidationService.validateDocumentsFuzzy(
-                request.getRequiredDocuments(), 
-                request.getUploadedFileNames()
-            );
-        
-        DocumentValidationResponse response = new DocumentValidationResponse();
-        response.setValid(result.isValid());
-        response.setMessage(result.getMessage());
-        response.setMatchedDocuments(result.getMatchedDocuments());
-        response.setMissingDocuments(result.getMissingDocuments());
-        response.setWarnings(result.getWarnings());
-        response.setDuplicateDocuments(result.getDuplicateDocuments());
-        
-        return ResponseEntity.ok(response);
-    }
+    
 
     /**
      * Validate document CONTENT using OCR - This checks actual PDF content!
@@ -130,7 +83,7 @@ public class BidController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             
-            DocumentValidationService.ValidationResult result = 
+            ValidationResult result = 
                 documentValidationService.validateDocumentContent(requiredDocuments, files);
             
             DocumentValidationResponse response = new DocumentValidationResponse();
@@ -204,7 +157,7 @@ public class BidController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             
-            DocumentValidationService.ValidationResult result = 
+            ValidationResult result = 
                 documentValidationService.validateWithRules(requiredDocuments, files);
             
             DocumentValidationResponse response = new DocumentValidationResponse();

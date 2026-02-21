@@ -30,7 +30,7 @@ public class BidderService {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // Check if email already exists
+           
             if (bidderRepository.existsByEmail(request.getEmail())) {
                 response.put("success", false);
                 response.put("message", "Email already exists");
@@ -103,14 +103,13 @@ public class BidderService {
                 return response;
             }
 
-            // Check if the user is the owner of the bidder
+            
             if (userId == null || !bidder.getCreatedBy().equals(userId)) {
                 response.put("success", false);
                 response.put("message", "You are not authorized to edit this bidder");
                 return response;
             }
 
-            // Check if email is being changed and if it already exists
             if (request.getEmail() != null && !request.getEmail().equals(bidder.getEmail())) {
                 if (bidderRepository.existsByEmail(request.getEmail())) {
                     response.put("success", false);
@@ -173,7 +172,6 @@ public class BidderService {
                 return response;
             }
 
-            // Check if the user is the owner of the bidder
             if (!bidder.getCreatedBy().equals(userId)) {
                 response.put("success", false);
                 response.put("message", "You are not authorized to delete this bidder");

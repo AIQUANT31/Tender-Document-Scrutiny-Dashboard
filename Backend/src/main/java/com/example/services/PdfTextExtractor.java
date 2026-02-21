@@ -11,21 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Local PDF text extraction service using Apache PDFBox
- * No external dependencies or credentials needed
- */
 @Service
 public class PdfTextExtractor {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfTextExtractor.class);
 
-    /**
-     * Extract text from a PDF file
-     * 
-     * @param file The PDF file to extract text from
-     * @return Extracted text or error message
-     */
     public String extractText(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return "Error: Empty file";
@@ -51,12 +41,7 @@ public class PdfTextExtractor {
         }
     }
 
-    /**
-     * Extract text from multiple PDF files
-     * 
-     * @param files Array of PDF files
-     * @return Map of filename to extracted text
-     */
+    
     public java.util.Map<String, String> extractTextFromMultiple(java.util.List<MultipartFile> files) {
         java.util.Map<String, String> results = new java.util.HashMap<>();
         

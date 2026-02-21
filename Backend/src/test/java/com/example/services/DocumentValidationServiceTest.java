@@ -6,9 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.dto.ValidationResult;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,18 +21,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Test for DocumentValidationService
- * Tests rule-based keyword validation with OCR
- */
+
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class DocumentValidationServiceTest {
 
     @Mock
     private OcrService ocrService;
 
     @Mock
-    private ImageToPdfConverter imageToPdfConverter;
+    private DuplicateDetector duplicateDetector;
+
+    @Mock
+    private KeywordMatcher keywordMatcher;
 
     @InjectMocks
     private DocumentValidationService documentValidationService;
@@ -37,7 +43,8 @@ class DocumentValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Setup common mocks
+        // Setup duplicate detector to return empty list (no duplicates)
+        when(duplicateDetector.getDuplicateFileNames(any())).thenReturn(new ArrayList<>());
     }
 
     @Test
@@ -47,7 +54,7 @@ class DocumentValidationServiceTest {
         MultipartFile[] files = new MultipartFile[]{mockFile};
 
         // When
-        DocumentValidationService.ValidationResult result = 
+        ValidationResult result = 
             documentValidationService.validateWithRules(requiredDocs, files);
 
         // Then
@@ -62,7 +69,7 @@ class DocumentValidationServiceTest {
         MultipartFile[] files = new MultipartFile[0];
 
         // When
-        DocumentValidationService.ValidationResult result = 
+        ValidationResult result = 
             documentValidationService.validateWithRules(requiredDocs, files);
 
         // Then
@@ -74,13 +81,17 @@ class DocumentValidationServiceTest {
     void testValidateWithRules_KeywordFound() throws IOException {
         // Given
         List<String> requiredDocs = Arrays.asList("PAN");
+        List<String> keywords = Arrays.asList("pan", "permanent account", "income tax", "pan card");
+        
         when(mockFile.getOriginalFilename()).thenReturn("pan_card.pdf");
         when(mockFile.isEmpty()).thenReturn(false);
-        when(imageToPdfConverter.isImageFile(any())).thenReturn(false);
+        when(mockFile.getContentType()).thenReturn("application/pdf");
         when(ocrService.extractText(any())).thenReturn("This is a PAN card document with permanent account number");
+        when(keywordMatcher.getKeywordsForDocument(any())).thenReturn(keywords);
+        when(keywordMatcher.validatePanCardInContent(any())).thenReturn("PAN_KEYWORD_FOUND");
 
         // When
-        DocumentValidationService.ValidationResult result = 
+        ValidationResult result = 
             documentValidationService.validateWithRules(requiredDocs, new MultipartFile[]{mockFile});
 
         // Then
@@ -92,55 +103,63 @@ class DocumentValidationServiceTest {
     @Test
     void testValidateWithRules_KeywordNotFound() throws IOException {
         // Given
-        List<String> requiredDocs = Arrays.asList("PAN");
-        when(mockFile.getOriginalFilename()).thenReturn("other_doc.pdf");
+        List<String> requiredDocs = Arrays.asList("PASSPORT");
+        List<String> keywords = Arrays.asList("passport", "travel document");
+        
+        when(mockFile.getOriginalFilename()).thenReturn("bank_statement.pdf");
         when(mockFile.isEmpty()).thenReturn(false);
-        when(imageToPdfConverter.isImageFile(any())).thenReturn(false);
-        when(ocrService.extractText(any())).thenReturn("This is some other document without PAN");
+        when(mockFile.getContentType()).thenReturn("application/pdf");
+        when(ocrService.extractText(any())).thenReturn("This is a bank statement for account 12345");
+        when(keywordMatcher.getKeywordsForDocument(any())).thenReturn(keywords);
+        when(keywordMatcher.validatePanCardInContent(any())).thenReturn(null);
+        when(keywordMatcher.validateAadharCardInContent(any())).thenReturn(null);
+        when(keywordMatcher.checkContentMatch(any(), any(), any(), any())).thenReturn(false);
 
         // When
-        DocumentValidationService.ValidationResult result = 
+        ValidationResult result = 
             documentValidationService.validateWithRules(requiredDocs, new MultipartFile[]{mockFile});
 
         // Then
         assertFalse(result.isValid(), "Should be invalid when keyword not found");
-        assertTrue(result.getMissingDocuments().contains("PAN"), "Should have PAN in missing documents");
+        assertTrue(result.getMissingDocuments().contains("PASSPORT"), "Should have PASSPORT in missing documents");
     }
 
     @Test
     void testValidateWithRules_ImageConversion() throws IOException {
         // Given
         List<String> requiredDocs = Arrays.asList("PAN");
-        MultipartFile convertedPdf = mock(MultipartFile.class);
+        List<String> keywords = Arrays.asList("pan", "permanent account");
         
-        when(mockFile.getOriginalFilename()).thenReturn("pan_card.jpg");
+        when(mockFile.getOriginalFilename()).thenReturn("pan_card.pdf");
         when(mockFile.isEmpty()).thenReturn(false);
-        when(imageToPdfConverter.isImageFile(any())).thenReturn(true);
-        when(imageToPdfConverter.convertImageToPdf(any())).thenReturn(convertedPdf);
-        when(convertedPdf.getOriginalFilename()).thenReturn("pan_card.pdf");
-        when(convertedPdf.isEmpty()).thenReturn(false);
+        when(mockFile.getContentType()).thenReturn("application/pdf");
         when(ocrService.extractText(any())).thenReturn("PAN card document");
+        when(keywordMatcher.getKeywordsForDocument(any())).thenReturn(keywords);
+        when(keywordMatcher.validatePanCardInContent(any())).thenReturn("PAN_KEYWORD_FOUND");
 
         // When
-        DocumentValidationService.ValidationResult result = 
+        ValidationResult result = 
             documentValidationService.validateWithRules(requiredDocs, new MultipartFile[]{mockFile});
 
         // Then
-        verify(imageToPdfConverter, times(1)).convertImageToPdf(any());
-        assertTrue(result.isValid() || !result.getMissingDocuments().isEmpty());
+        assertTrue(result.isValid(), "Should be valid when keyword found");
     }
 
     @Test
     void testValidateWithRules_CaseInsensitive() throws IOException {
         // Given
         List<String> requiredDocs = Arrays.asList("Pan"); // Capital P
+        List<String> keywords = Arrays.asList("pan", "permanent account");
+        
         when(mockFile.getOriginalFilename()).thenReturn("pan_card.pdf");
         when(mockFile.isEmpty()).thenReturn(false);
-        when(imageToPdfConverter.isImageFile(any())).thenReturn(false);
+        when(mockFile.getContentType()).thenReturn("application/pdf");
         when(ocrService.extractText(any())).thenReturn("PAN CARD document"); // Uppercase in content
+        when(keywordMatcher.getKeywordsForDocument(any())).thenReturn(keywords);
+        when(keywordMatcher.validatePanCardInContent(any())).thenReturn("PAN_KEYWORD_FOUND");
 
         // When
-        DocumentValidationService.ValidationResult result = 
+        ValidationResult result = 
             documentValidationService.validateWithRules(requiredDocs, new MultipartFile[]{mockFile});
 
         // Then

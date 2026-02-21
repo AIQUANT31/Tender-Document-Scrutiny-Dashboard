@@ -124,7 +124,7 @@
         
         <!-- Show warnings -->
         <div *ngIf="documentValidationResult.warnings && documentValidationResult.warnings.length > 0" class="validation-warnings">
-          <p *ngFor="let warning of documentValidationResult.warnings" class="warning-text">⚠️ {{ warning }}</p>
+          <p *ngFor="let warning of documentValidationResult.warnings" class="warning-text"> {{ warning }}</p>
         </div>
       </div>
       
