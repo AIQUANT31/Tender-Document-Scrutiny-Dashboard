@@ -129,11 +129,11 @@ export class TenderDetailComponent {
 
   // Open bids view for tender creator
   openBids() {
-    console.log('openBids called, tender:', this.tender?.id);
+    console.log('Opening called tender', this.tender?.id);
     this.showBids = true;
     // Reload bids when opening
     this.cdr.detectChanges();
-    console.log('showBids set to:', this.showBids);
+     console.log('showBids set to:', this.showBids);
   }
 
   closeBids() {

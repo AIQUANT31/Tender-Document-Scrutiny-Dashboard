@@ -18,5 +18,6 @@ public class DashboardController {
             @RequestParam(required = false, defaultValue = "User") String username) {
         DashboardResponse response = dashboardService.getDashboardData(username);
         return ResponseEntity.ok(response);
+        
     }
 }

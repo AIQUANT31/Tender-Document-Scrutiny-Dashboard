@@ -56,7 +56,7 @@ export class TenderPage implements OnInit {
   }
 
   ngOnInit() {
-    console.log('TenderPage ngOnInit');
+      console.log('TenderPage ngOnInit');
   }
 
   loadTenders() {
@@ -64,8 +64,7 @@ export class TenderPage implements OnInit {
     this.loading = true;
     this.http.get<TenderData[]>('http://localhost:8080/api/tenders').subscribe({
       next: (data) => {
-        console.log('Tenders loaded:', data);
-        // Transform dates to ISO 8601 format if needed and check for expired deadlines
+         console.log('Tenders loaded:', data);
         this.tenders = data.map(tender => {
           const normalizedTender = {
             ...tender,
@@ -150,16 +149,20 @@ export class TenderPage implements OnInit {
   }
 
   createTender() {
-    console.log('Create tender button clicked');
+     console.log('Create tender button clicked');
     console.log('Current showTenderForm value:', this.showTenderForm);
     this.showTenderForm = true;
-    console.log('New showTenderForm value:', this.showTenderForm);
-    this.cdr.detectChanges(); // Force change detection to show modal
-    console.log('Change detection completed');
+        console.log('New showTenderForm value:', this.showTenderForm);
+
+    this.cdr.detectChanges();
+        console.log('Change detection completed');
+
+    
   }
 
   onTenderSubmit(formData: any) {
-    console.log('Form submitted with data:', formData);
+        console.log('Form submitted with data:', formData);
+
     if (this.userId) {
       const request = {
         name: formData.title,
@@ -176,12 +179,12 @@ export class TenderPage implements OnInit {
         comments: formData.comments || '',
         userType: formData.userType || ''
       };
+            console.log('Sending request to API:', request);
 
-      console.log('Sending request to API:', request);
-      
       this.http.post<any>('http://localhost:8080/api/tenders/create', request).subscribe({
         next: (response) => {
-          console.log('Tender created successfully:', response);
+                    console.log('Tender created successfully:', response);
+
           if (response.success) {
             alert('Tender created successfully!');
             this.showTenderForm = false;

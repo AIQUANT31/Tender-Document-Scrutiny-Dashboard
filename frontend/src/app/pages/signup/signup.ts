@@ -33,13 +33,12 @@ export class Signup {
       email: this.email,
       password: this.password
     };
+ console.log('Sending signup request to: http://localhost:8080/api/auth/signup');
 
-    console.log('Sending signup request to: http://localhost:8080/api/auth/signup');
-    
     this.http.post<{ message: string }>('http://localhost:8080/api/auth/signup', signupData)
       .subscribe({
         next: (response) => {
-          console.log('Signup response:', response);
+             console.log('Signup response:', response);
           this.message = response.message;
           this.isSuccess = response.message === 'User registered successfully!';
           if (this.isSuccess) {
@@ -55,7 +54,7 @@ export class Signup {
           }
         },
         error: (error) => {
-          console.error('Signup error details:', error);
+           console.error('Signup error details:', error);
           let backendMessage = 'Unknown error';
           
           if (error.status === 0) {

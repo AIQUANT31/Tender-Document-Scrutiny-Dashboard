@@ -174,7 +174,7 @@
             <h3>Documents ({{ getDocumentPaths(selectedBid).length }})</h3>
             <div class="documents-list">
               <div class="document-item" *ngFor="let docPath of getDocumentPaths(selectedBid); let i = index">
-                <span class="document-icon">📄</span>
+                
                 <span class="document-name">{{ getFileName(docPath) }}</span>
                 <button class="download-btn" (click)="downloadDocument(selectedBid.bidId, docPath); $event.stopPropagation()">
                   Download

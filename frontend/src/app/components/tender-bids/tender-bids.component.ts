@@ -97,10 +97,10 @@ export class TenderBidsComponent implements OnInit {
   }
 
   viewBidDetails(bid: BidWithBidder) {
-    console.log('Viewing bid details:', bid);
+       console.log('Viewing bid details:', bid);
     this.selectedBid = bid;
     this.showBidDetail = true;
-    console.log('showBidDetail set to true');
+        console.log('showBidDetail set to true');
     setTimeout(() => {
       this.cdr.detectChanges();
     }, 100);
@@ -224,12 +224,10 @@ export class TenderBidsComponent implements OnInit {
       // Download specific document by path
       const fileName = docPath.substring(docPath.lastIndexOf('/') + 1);
       const url = `http://localhost:8080/api/bids/download-document/${bidId}?fileName=${encodeURIComponent(fileName)}`;
-      console.log('Download URL:', url);
       window.open(url, '_blank');
     } else if (bidId) {
       // Fallback: download first document
       const url = `http://localhost:8080/api/bids/download-document/${bidId}`;
-      console.log('Download URL:', url);
       window.open(url, '_blank');
     }
   }

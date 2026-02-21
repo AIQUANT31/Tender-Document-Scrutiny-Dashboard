@@ -153,7 +153,7 @@ public class BidDocumentController {
         }
     }
 
-  // upload mutiple documents to a bid
+ 
     @PostMapping(value = "/upload-documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> uploadDocuments(
             @RequestParam("files") MultipartFile[] files,
@@ -161,6 +161,14 @@ public class BidDocumentController {
         
         Map<String, Object> response = new HashMap<>();
         List<String> savedFileNames = new ArrayList<>();
+        
+        logger.info("Uploading {} files", files != null ? files.length : 0);
+        
+        if (files == null || files.length == 0) {
+            response.put("success", false);
+            response.put("message", "No files provided");
+            return ResponseEntity.badRequest().body(response);
+        }
         
         try {
             for (MultipartFile file : files) {
@@ -172,10 +180,11 @@ public class BidDocumentController {
                         .body(Map.of("success", false, "message", "Only PDF files under 50MB are allowed"));
                 }
 
-                // Save file
+                // Save file to disk
                 String docPath = saveFile(file, "bid_" + (bidId != null ? bidId : "temp"));
                 if (docPath != null) {
                     savedFileNames.add(docPath);
+                    logger.info("File saved: {}", file.getOriginalFilename());
                 }
             }
 
@@ -327,10 +336,10 @@ public class BidDocumentController {
             Files.createDirectories(uploadPath);
         }
 
-        // Generate unique filename
+        // Generate unique filename with timestamp and random number
         String originalFilename = file.getOriginalFilename();
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String newFilename = prefix + "_" + System.currentTimeMillis() + fileExtension;
+        String newFilename = prefix + "_" + System.currentTimeMillis() + "_" + (int)(Math.random() * 10000) + fileExtension;
 
         // Save file
         Path filePath = uploadPath.resolve(newFilename);

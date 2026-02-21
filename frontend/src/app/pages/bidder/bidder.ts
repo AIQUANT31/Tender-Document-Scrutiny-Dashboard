@@ -116,6 +116,7 @@ export class Bidder implements OnInit {
     });
   }
 
+
   // Table Events
   viewBidderDetails(id: number) { this.selectedBidderId = id; this.showBidderDetail = true; }
   onDeleteSuccess() { this.loadBidders(); }

@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NavComponent } from '../../components/nav/nav.component';
 import { BidDocumentUploadComponent } from '../../components/bid-document-upload/bid-document-upload.component';
+import { DocumentValidationService, ValidationResponse } from '../../services/document-validation.service';
 
 interface TenderDetail {
   id: number;
@@ -75,12 +76,17 @@ export class PlaceBidComponent implements OnInit {
   
   // Required documents from tender
   requiredDocumentsList: string[] = [];
+  
+  // Document validation
+  documentValidationResult: ValidationResponse | null = null;
+  isValidatingDocuments = false;
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private documentValidation: DocumentValidationService
   ) {
     // Get userId from localStorage
     if (typeof localStorage !== 'undefined') {
@@ -201,7 +207,92 @@ export class PlaceBidComponent implements OnInit {
     });
   }
 
-  submitBid() {
+  /**
+   * Validates documents BEFORE submission using CONTENT validation
+   * Extracts text from PDF and checks for required keywords
+   */
+  async validateDocumentsAsync(): Promise<boolean> {
+    // If no required documents, skip validation
+    if (!this.hasRequiredDocuments) {
+      return true;
+    }
+    
+    // If documents are required but none uploaded
+    if (!this.selectedBidFiles || this.selectedBidFiles.length === 0) {
+      this.bidError = 'This tender requires documents: ' + this.requiredDocumentsList.join(', ');
+      return false;
+    }
+    
+    this.isValidatingDocuments = true;
+    this.bidError = 'Validating document content... please wait';
+    this.cdr.detectChanges();
+    
+    try {
+      // Use backend validation with content extraction
+      const result = await this.documentValidation.validateWithRules(
+        this.requiredDocumentsList,
+        this.selectedBidFiles
+      ).toPromise();
+      
+      this.documentValidationResult = result || null;
+      this.isValidatingDocuments = false;
+      
+      if (!result?.valid) {
+        // Don't set bidError here - it's shown in validation-result div
+        // Block submission if validation fails
+        this.cdr.detectChanges();
+        return false;
+      }
+      
+      // Check for duplicate documents - block submission if duplicates found
+      if (result?.duplicateDocuments && result.duplicateDocuments.length > 0) {
+        this.bidError = 'Duplicate documents detected. Please remove duplicates before submitting.';
+        this.cdr.detectChanges();
+        return false;
+      }
+      
+      // Show matched documents
+      if (result?.matchedDocuments && result.matchedDocuments.length > 0) {
+      }
+      
+      this.bidError = '';
+      this.cdr.detectChanges();
+      return true;
+      
+    } catch (error) {
+      console.error('Validation error:', error);
+      this.isValidatingDocuments = false;
+      this.bidError = 'Validation failed. Please try again.';
+      this.cdr.detectChanges();
+      return false;
+    }
+  }
+
+  /**
+   * Fallback client-side validation (if backend unavailable)
+   */
+  validateDocumentsClientSide(): boolean {
+    if (!this.hasRequiredDocuments || !this.selectedBidFiles || this.selectedBidFiles.length === 0) {
+      return true;
+    }
+    
+    const uploadedFileNames = this.selectedBidFiles.map(f => f.name);
+    const result = this.documentValidation.validateDocumentsClientSide(
+      this.requiredDocumentsList,
+      uploadedFileNames
+    );
+    
+    this.documentValidationResult = result;
+    
+    if (!result.valid) {
+      // Don't set bidError here - message is shown in validation-result div
+      return false;
+    }
+    
+    return true;
+  }
+
+  async submitBid() {
     if (!this.tender) return;
 
     if (!this.bidAmount || parseFloat(this.bidAmount) <= 0) {
@@ -212,6 +303,12 @@ export class PlaceBidComponent implements OnInit {
     if (!this.bidderId) {
       this.bidError = 'Please select a bidder profile first';
       return;
+    }
+
+    // Validate documents BEFORE submitting (CONTENT-BASED using OCR)
+    const isValid = await this.validateDocumentsAsync();
+    if (!isValid) {
+      return; // Error message already set in validateDocumentsAsync
     }
 
     // If files are selected, submit with FormData
@@ -229,8 +326,9 @@ export class PlaceBidComponent implements OnInit {
 
       this.http.post<any>('http://localhost:8080/api/bids/create-with-document', formData).subscribe({
         next: (response) => {
-          console.log('Bid response:', response);
+            console.log('Bid response:', response);
           if (response.success) {
+            
             // If there are more files, upload them separately
             if (this.selectedBidFiles.length > 1) {
               const additionalFiles = this.selectedBidFiles.slice(1);
@@ -279,7 +377,7 @@ export class PlaceBidComponent implements OnInit {
 
       this.http.post<any>('http://localhost:8080/api/bids/create', bidRequest).subscribe({
         next: (response) => {
-          console.log('Bid response:', response);
+           console.log('Bid response:', response);
           if (response.success) {
             alert('Bid placed successfully!');
             this.router.navigate(['/tender']);

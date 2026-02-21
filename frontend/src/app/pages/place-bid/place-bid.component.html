@@ -32,7 +32,11 @@
     <div class="bid-form-card">
       <h3>Place Your Bid</h3>
       
-      <div class="bid-error" *ngIf="bidError">{{ bidError }}</div>
+      <!-- Validation Status -->
+      <!-- <div class="validation-status" *ngIf="isValidatingDocuments">
+        <p class="validating">🔄 Validating documents using OCR... Please wait</p>
+      </div>
+       -->
       
       <!-- Loading bidder profile -->
       <div class="loading" *ngIf="loadingProfiles">
@@ -89,6 +93,43 @@
           [requiredDocuments]="requiredDocumentsList"
           (filesSelected)="onFilesSelected($event)">
         </app-bid-document-upload>
+      
+      <div class="validation-result" *ngIf="documentValidationResult && !isValidatingDocuments">
+        <p *ngIf="documentValidationResult.valid" class="valid">✓ {{ documentValidationResult.message }}</p>
+        <p *ngIf="!documentValidationResult.valid" class="invalid">✗ {{ documentValidationResult.message }}</p>
+        
+        <!-- Show duplicate documents warning -->
+        <div *ngIf="documentValidationResult.duplicateDocuments && documentValidationResult.duplicateDocuments.length > 0" class="duplicate-warning">
+          <p class="warning">⚠ Duplicate documents detected:</p>
+          <ul>
+            <li *ngFor="let dup of documentValidationResult.duplicateDocuments">{{ dup }}</li>
+          </ul>
+        </div>
+        
+        <!-- Show matched documents -->
+        <div *ngIf="documentValidationResult.matchedDocuments && documentValidationResult.matchedDocuments.length > 0" class="matched-docs">
+          <p>Validated documents:</p>
+          <ul>
+            <li *ngFor="let doc of documentValidationResult.matchedDocuments">{{ doc }}</li>
+          </ul>
+        </div>
+        
+        <!-- Show missing documents -->
+        <div *ngIf="documentValidationResult.missingDocuments && documentValidationResult.missingDocuments.length > 0" class="missing-docs">
+          <p>Missing documents:</p>
+          <ul>
+            <li *ngFor="let doc of documentValidationResult.missingDocuments">{{ doc }}</li>
+          </ul>
+        </div>
+        
+        <!-- Show warnings -->
+        <div *ngIf="documentValidationResult.warnings && documentValidationResult.warnings.length > 0" class="validation-warnings">
+          <p *ngFor="let warning of documentValidationResult.warnings" class="warning-text">⚠️ {{ warning }}</p>
+        </div>
+      </div>
+      
+      <div class="bid-error" *ngIf="bidError">{{ bidError }}</div>
+      
 
         <div class="bid-form-actions">
           <button class="btn btn-secondary" (click)="goBack()">Cancel</button>

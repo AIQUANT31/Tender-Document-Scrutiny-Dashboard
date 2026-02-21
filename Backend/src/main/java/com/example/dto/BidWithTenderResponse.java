@@ -106,7 +106,7 @@ public class BidWithTenderResponse {
         this.proposalText = proposalText;
     }
 
-    public String getStatus() {
+    public String getStatus() {  
         return status;
     }
 

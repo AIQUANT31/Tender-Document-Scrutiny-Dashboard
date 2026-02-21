@@ -16,11 +16,12 @@ export class TenderFormComponent implements OnChanges {
   @Output() onCancel = new EventEmitter<void>();
 
   constructor() {
-    console.log('TenderFormComponent initialized, isOpen:', this.isOpen);
+      console.log('TenderFormComponent initialized, isOpen:', this.isOpen);
+
   }
 
   ngOnChanges() {
-    console.log('TenderFormComponent ngOnChanges, isOpen:', this.isOpen);
+      console.log('TenderFormComponent ngOnChanges, isOpen:', this.isOpen);
   }
 
   formData = {
@@ -156,11 +157,11 @@ export class TenderFormComponent implements OnChanges {
   }
 
   onSubmit(): void {
-    console.log('onSubmit called');
+
+      console.log('onSubmit called');
     console.log('Form validity:', this.isValidForm());
     console.log('Form data:', this.formData);
     console.log('Selected category:', this.selectedCategory);
-    
     if (this.isValidForm()) {
       // Sync selectedCategory to formData.category before submitting
       this.formData.category = this.selectedCategory;
@@ -170,7 +171,7 @@ export class TenderFormComponent implements OnChanges {
         ...this.formData,
         requiredDocuments: this.formData.requiredDocuments.join(',')
       };
-      
+         
       console.log('Submitting data:', submitData);
       this.onSubmitForm.emit(submitData);
       this.resetForm();
