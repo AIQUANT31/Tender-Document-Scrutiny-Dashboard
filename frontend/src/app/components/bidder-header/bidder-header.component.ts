@@ -13,12 +13,12 @@ export class BidderHeaderComponent {
   @Input() bidders: BidderData[] = [];
   @Output() addBidder = new EventEmitter<void>();
 
-  // Computed property - check if can add new bidder
+ 
   get canAddBidder(): boolean {
     return this.bidders.length === 0;
   }
 
-  // Get first bidder's company name
+
   get companyName(): string {
     return this.bidders[0]?.companyName || '';
   }

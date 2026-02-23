@@ -21,26 +21,25 @@ public class CacheConfig {
         
     
         cacheManager.setCacheNames(Arrays.asList(
-            // Bid caches
+            
             "bidsByTender",      
             "bidsByBidder",      
             "bidStats",          
             "bidDetails",       
             "tenderBids",        
             "bidsWithTenders",   
-            
-            // Bidder caches
+          
             "allBidders",        
             "bidderById",        
             "biddersByUser",     
             "bidderStats",       
             
-            // Tender caches
+            
             "allTenders",        
             "tenderById",        
             "tendersByUser",     
             
-            // Dashboard caches
+           
             "dashboardData"      
         ));
         

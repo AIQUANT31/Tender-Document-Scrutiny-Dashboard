@@ -2,13 +2,13 @@
   <app-nav></app-nav>
   
   <main class="dashboard-content">
-    <!-- Welcome Section -->
+    
     <div class="welcome-section">
       <h1>Welcome, {{ username }}</h1>
       <p>Manage your tenders and bids from this dashboard</p>
     </div>
 
-    <!-- Loading State -->
+    
     <div *ngIf="loading" class="loading-spinner">
       <div class="spinner"></div>
       <p>Loading dashboard...</p>
@@ -16,7 +16,7 @@
 
     <div *ngIf="!loading" class="dashboard-content-inner">
       
-      <!-- Stats Component -->
+      
       <app-dashboard-stats
         [totalTenders]="totalTenders"
         [openTenders]="openTenders"
@@ -25,17 +25,19 @@
         [pendingBids]="pendingBids"
         [approvedBids]="approvedBids"
         [rejectedBids]="rejectedBids"
-        [totalBidders]="totalBidders">
+        [totalBidders]="totalBidders"
+        [activeBidders]="activeBidders"
+        [inactiveBidders]="inactiveBidders">
       </app-dashboard-stats>
 
-      <!-- Recent Activity Component -->
+      
       <app-dashboard-activity
         [recentTenders]="recentTenders"
         [recentBids]="recentBids"
         [recentBidders]="recentBidders">
       </app-dashboard-activity>
 
-      <!-- Quick Actions Component -->
+      
       <app-dashboard-actions></app-dashboard-actions>
 
     </div>

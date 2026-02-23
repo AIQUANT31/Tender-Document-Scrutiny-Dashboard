@@ -35,7 +35,7 @@ public class BidService {
     @Autowired
     private TenderRepository tenderRepository;
 
-    @CacheEvict(value = {"bidsByTender", "bidsByBidder", "bidStats", "tenderBids", "bidsWithTenders"}, 
+    @CacheEvict(value = {"bidsByTender", "bidsByBidder", "bidStats", "tenderBids", "bidsWithTenders", "dashboardData"}, 
                allEntries = true, 
                condition = "#request != null")
     public Map<String, Object> createBid(BidRequest request) {
@@ -173,7 +173,7 @@ public class BidService {
     }
 
     
-    @CacheEvict(value = {"bidDetails", "bidsByTender", "bidsByBidder", "bidStats", "tenderBids", "bidsWithTenders"},
+    @CacheEvict(value = {"bidDetails", "bidsByTender", "bidsByBidder", "bidStats", "tenderBids", "bidsWithTenders", "dashboardData"},
                allEntries = true,
                condition = "#bidId != null")
     public Map<String, Object> updateBidStatus(Long bidId, String status) {
@@ -206,6 +206,23 @@ public class BidService {
                 }
             }
 
+            // If marking as APPROVED, ACCEPTED or WINNING, reject all other pending bids for this tender
+            if ("APPROVED".equals(status) || "ACCEPTED".equals(status) || "WINNING".equals(status)) {
+                List<Bid> allBidsForTender = bidRepository.findByTenderId(bid.getTenderId());
+                for (Bid otherBid : allBidsForTender) {
+                    // Skip the current bid being approved
+                    if (!otherBid.getId().equals(bidId)) {
+                        // Only reject pending bids (not already approved/rejected)
+                        if ("PENDING".equals(otherBid.getStatus())) {
+                            otherBid.setStatus("REJECTED");
+                            bidRepository.save(otherBid);
+                            logger.info("Auto-rejected bid ID: {} for tender ID: {} as another bid was approved", 
+                                otherBid.getId(), bid.getTenderId());
+                        }
+                    }
+                }
+            }
+
             bid.setStatus(status);
             bid.setIsWinning("WINNING".equals(status));
             
@@ -226,7 +243,7 @@ public class BidService {
     }
 
    
-    @CacheEvict(value = {"bidDetails", "bidsByTender", "bidsByBidder", "bidStats", "tenderBids", "bidsWithTenders"},
+    @CacheEvict(value = {"bidDetails", "bidsByTender", "bidsByBidder", "bidStats", "tenderBids", "bidsWithTenders", "dashboardData"},
                allEntries = true,
                condition = "#bidId != null")
     public Map<String, Object> deleteBid(Long bidId, Long userId) {

@@ -10,11 +10,11 @@ import com.example.repository.TenderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,13 +34,14 @@ public class DashboardService {
     @Autowired
     private BidderRepository bidderRepository;
 
-    @Cacheable(value = "dashboardData", key = "#username",
-              condition = "#username != null",
-              unless = "#result == null")
+    
     public DashboardResponse getDashboardData(String username) {
         logger.debug("Fetching dashboard data for user: {} (Cache Miss - loading from DB)", username);
         
         try {
+            // Update tender statuses based on deadline before counting
+            updateTenderStatusesForDashboard();
+            
             // Get stats
             long totalTenders = tenderRepository.count();
             long openTenders = 0;
@@ -70,14 +71,28 @@ public class DashboardService {
                 Long count = (Long) obj[1];
                 if ("PENDING".equals(status)) {
                     pendingBids = count;
-                } else if ("APPROVED".equals(status)) {
-                    approvedBids = count;
+                } else if ("APPROVED".equals(status) || "WINNING".equals(status)) {
+                    approvedBids += count;
                 } else if ("REJECTED".equals(status)) {
                     rejectedBids = count;
                 }
             }
             
             long totalBidders = bidderRepository.countTotalBidders();
+            long activeBidders = 0;
+            long inactiveBidders = 0;
+            
+            // Get bidder status counts
+            List<Object[]> bidderStatusGrouped = bidderRepository.countByStatusGrouped();
+            for (Object[] obj : bidderStatusGrouped) {
+                String status = (String) obj[0];
+                Long count = (Long) obj[1];
+                if ("ACTIVE".equals(status)) {
+                    activeBidders = count;
+                } else if ("INACTIVE".equals(status)) {
+                    inactiveBidders = count;
+                }
+            }
             
             // Get tender status data for chart
             List<DashboardResponse.StatusCount> tenderStatusData = new ArrayList<>();
@@ -92,6 +107,15 @@ public class DashboardService {
             List<DashboardResponse.StatusCount> bidStatusData = new ArrayList<>();
             for (Object[] obj : bidStatusGrouped) {
                 bidStatusData.add(new DashboardResponse.StatusCount(
+                    (String) obj[0],
+                    (Long) obj[1]
+                ));
+            }
+            
+            // Get bidder status data for chart
+            List<DashboardResponse.StatusCount> bidderStatusData = new ArrayList<>();
+            for (Object[] obj : bidderStatusGrouped) {
+                bidderStatusData.add(new DashboardResponse.StatusCount(
                     (String) obj[0],
                     (Long) obj[1]
                 ));
@@ -194,8 +218,11 @@ public class DashboardService {
                 approvedBids,
                 rejectedBids,
                 totalBidders,
+                activeBidders,
+                inactiveBidders,
                 tenderStatusData,
                 bidStatusData,
+                bidderStatusData,
                 monthlyTenders,
                 monthlyBids,
                 recentTenders,
@@ -207,12 +234,34 @@ public class DashboardService {
             // Return empty response on error
             return new DashboardResponse(
                 "Error loading dashboard",
-                username,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                new ArrayList<>(), new ArrayList<>(),
+                username != null ? username : "Unknown",
+                0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
                 new ArrayList<>(), new ArrayList<>(),
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
             );
         }
+    }
+    
+    // Update tender statuses based on deadline before getting counts
+    private void updateTenderStatusesForDashboard() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Tender> expiredTenders = tenderRepository.findOpenTendersWithExpiredDeadline(now);
+        
+        if (!expiredTenders.isEmpty()) {
+            logger.info("Dashboard: Updating {} expired tenders to CLOSED", expiredTenders.size());
+            for (Tender tender : expiredTenders) {
+                tender.setStatus("CLOSED");
+                tenderRepository.save(tender);
+            }
+            // Evict dashboard cache after updating statuses
+            evictDashboardCache();
+        }
+    }
+    
+    // Public method to evict dashboard cache (can be called from other services)
+    @org.springframework.cache.annotation.CacheEvict(value = "dashboardData", allEntries = true)
+    public void evictDashboardCache() {
+        logger.info("Dashboard cache evicted");
     }
 }

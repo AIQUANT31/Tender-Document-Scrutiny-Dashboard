@@ -1,4 +1,4 @@
-<!-- Bidder View Details Modal -->
+
 <div class="bid-detail-overlay" *ngIf="showBidderDetail && selectedBidder" (click)="onClose()">
   <div class="bid-detail-modal" (click)="$event.stopPropagation()">
     <div class="bid-detail-header">
@@ -6,7 +6,7 @@
       <button class="close-btn" (click)="onClose()">×</button>
     </div>
     <div class="bid-detail-content">
-      <!-- Company Information -->
+    
       <div class="detail-section">
         <h3> Company Information</h3>
         <div class="detail-grid">
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <!-- Contact Details -->
+    
       <div class="detail-section">
         <h3> Contact Details</h3>
         <div class="detail-grid">
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <!-- Status & Performance -->
+    
       <div class="detail-section">
         <h3> Status & Performance</h3>
         <div class="detail-grid">
@@ -70,7 +70,7 @@
       </div>
     </div>
 
-    <!-- Action Buttons -->
+
     <div class="bid-detail-actions">
       <button class="action-btn close-action" (click)="onClose()">Close</button>
     </div>

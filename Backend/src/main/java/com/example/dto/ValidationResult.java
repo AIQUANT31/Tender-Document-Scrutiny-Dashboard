@@ -64,30 +64,22 @@ public class ValidationResult {
         this.message = message;
     }
 
-    /**
-     * Helper method to check if validation was successful
-     */
+    
     public boolean hasWarnings() {
         return warnings != null && !warnings.isEmpty();
     }
 
-    /**
-     * Helper method to check if there are duplicate documents
-     */
+   
     public boolean hasDuplicates() {
         return duplicateDocuments != null && !duplicateDocuments.isEmpty();
     }
 
-    /**
-     * Helper method to get total count of validated documents
-     */
+    
     public int getValidatedCount() {
         return matchedDocuments != null ? matchedDocuments.size() : 0;
     }
 
-    /**
-     * Helper method to get total count of missing documents
-     */
+    
     public int getMissingCount() {
         return missingDocuments != null ? missingDocuments.size() : 0;
     }

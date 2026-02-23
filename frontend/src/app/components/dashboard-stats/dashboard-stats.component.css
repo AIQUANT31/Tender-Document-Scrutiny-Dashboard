@@ -1,4 +1,4 @@
-/* Dashboard Stats Component Styles */
+
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -59,6 +59,8 @@
 .stat-sub .approved { color: #22c55e; background: #dcfce7; }
 .stat-sub .rejected { color: #ef4444; background: #fee2e2; }
 .stat-sub .success { color: #22c55e; background: #dcfce7; }
+.stat-sub .active { color: #22c55e; background: #dcfce7; }
+.stat-sub .inactive { color: #6b7280; background: #f3f4f6; }
 
 @media (max-width: 1200px) {
   .stats-row {

@@ -104,7 +104,7 @@ export class TenderFormComponent implements OnChanges {
   }
 
   onCategoryChange(): void {
-    // Reset required documents when category changes
+    
     this.formData.requiredDocuments = [];
   }
 
@@ -219,5 +219,37 @@ export class TenderFormComponent implements OnChanges {
 
   removeDocument(index: number): void {
     this.formData.requiredDocuments.splice(index, 1);
+  }
+
+  // Get status preview based on deadline date
+  getDeadlineStatus(): string {
+    if (!this.formData.deadline) {
+      return 'OPEN';
+    }
+    
+    console.log('getDeadlineStatus called with deadline:', this.formData.deadline);
+    
+    // Parse the deadline date
+    const deadlineStr = this.formData.deadline;
+    const deadlineDate = new Date(deadlineStr);
+    
+    // Get current date at midnight for fair comparison
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Set deadline to midnight of that day for comparison
+    const deadlineDay = new Date(deadlineDate.getFullYear(), deadlineDate.getMonth(), deadlineDate.getDate());
+    
+    console.log('Comparing deadlineDay:', deadlineDay, 'with today:', today);
+    console.log('deadlineDay < today:', deadlineDay < today);
+    
+    if (deadlineDay < today) {
+      return 'CLOSED';
+    }
+    return 'OPEN';
+  }
+
+  onDeadlineChange(): void {
+ 
   }
 }

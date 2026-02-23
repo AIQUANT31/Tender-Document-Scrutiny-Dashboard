@@ -16,7 +16,7 @@ export class BidderDetailComponent implements OnChanges {
   
   @Output() close = new EventEmitter<void>();
 
-  // Used in template
+  
   selectedBidder: BidderData | null = null;
   loading = false;
 
@@ -51,7 +51,7 @@ export class BidderDetailComponent implements OnChanges {
     this.selectedBidder = null;
   }
 
-  // Format date helper
+
   formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
     try {
@@ -61,7 +61,7 @@ export class BidderDetailComponent implements OnChanges {
     }
   }
 
-  // Get status badge class
+ 
   getStatusClass(status: string): string {
     switch (status?.toUpperCase()) {
       case 'ACTIVE': return 'badge-success';

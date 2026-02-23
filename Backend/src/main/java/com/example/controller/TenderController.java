@@ -73,4 +73,16 @@ public class TenderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+    
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Map<String, Object>> updateTenderStatus(
+            @PathVariable Long id, 
+            @RequestParam String status) {
+        Map<String, Object> response = tenderService.updateTenderStatus(id, status);
+        if (response.containsKey("success") && (Boolean) response.get("success")) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }

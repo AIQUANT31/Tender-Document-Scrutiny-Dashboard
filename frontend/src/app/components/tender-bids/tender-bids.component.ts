@@ -133,7 +133,7 @@ export class TenderBidsComponent implements OnInit {
   }
 
   acceptBid(bidId: number) {
-    if (confirm('Are you sure you want to accept this bid? This will mark it as the winning bid.')) {
+    if (confirm('Are you sure you want to accept this bid? This will mark it as the winning bid and automatically reject all other pending bids for this tender.')) {
       this.updateBidStatus(bidId, 'WINNING');
     }
   }
@@ -195,44 +195,50 @@ export class TenderBidsComponent implements OnInit {
     );
   }
 
-  // Get document paths as array
+  
   getDocumentPaths(bid: BidWithBidder): string[] {
+    console.log('Getting document paths for bid:', bid.bidId);
+    console.log('documentPath:', bid.documentPath);
+    console.log('documentPaths:', bid.documentPaths);
+    
     if (!bid.documentPaths) {
-      return bid.documentPath ? [bid.documentPath] : [];
+      const paths = bid.documentPath ? [bid.documentPath] : [];
+      console.log('Using documentPath fallback, paths:', paths);
+      return paths;
     }
     try {
-      // Try to parse as JSON
+     
       const parsed = JSON.parse(bid.documentPaths);
+      console.log('Parsed JSON:', parsed);
       if (Array.isArray(parsed)) {
         return parsed;
       }
-    } catch {
-      // If not JSON, try comma-separated
+    } catch (e) {
+    
+      console.log('JSON parse failed, trying comma-separated');
       return bid.documentPaths.split(',').map(p => p.trim()).filter(p => p);
     }
     return [];
   }
 
-  // Check if bid has documents
+ 
   hasDocuments(bid: BidWithBidder): boolean {
     return this.getDocumentPaths(bid).length > 0;
   }
 
-  // Download document - downloads the first document or all documents
+  
   downloadDocument(bidId: number, docPath?: string): void {
     if (bidId && docPath) {
-      // Download specific document by path
+   
       const fileName = docPath.substring(docPath.lastIndexOf('/') + 1);
       const url = `http://localhost:8080/api/bids/download-document/${bidId}?fileName=${encodeURIComponent(fileName)}`;
       window.open(url, '_blank');
     } else if (bidId) {
-      // Fallback: download first document
-      const url = `http://localhost:8080/api/bids/download-document/${bidId}`;
+          const url = `http://localhost:8080/api/bids/download-document/${bidId}`;
       window.open(url, '_blank');
     }
   }
 
-  // Get filename from path
   getFileName(path: string): string {
     if (!path) return 'Document';
     return path.substring(path.lastIndexOf('/') + 1);

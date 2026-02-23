@@ -57,7 +57,6 @@ export class BidderTableComponent {
     });
   }
 
-  // Helper to get status class
   getStatusClass(status: string): string {
     switch (status?.toUpperCase()) {
       case 'ACTIVE': return 'status-active';
@@ -67,7 +66,6 @@ export class BidderTableComponent {
     }
   }
 
-  // Helper to format date
   formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
     try {

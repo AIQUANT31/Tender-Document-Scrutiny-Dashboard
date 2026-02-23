@@ -271,3 +271,26 @@
   margin-bottom: 12px;
   font-style: italic;
 }
+
+/* Deadline status preview styles */
+.deadline-status {
+  margin-top: 8px;
+}
+
+.status-preview {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-preview.open {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-preview.closed {
+  background: #fee2e2;
+  color: #991b1b;
+}

@@ -134,8 +134,9 @@ public class BidDocumentController {
                 }
             }
             
-            // Save as JSON array
-            String jsonPaths = allPaths.toString().replace(" ", "");
+            // Save as proper JSON array
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String jsonPaths = mapper.writeValueAsString(allPaths);
             bid.setDocumentPaths(jsonPaths);
             bidService.saveBid(bid);
             
@@ -195,7 +196,9 @@ public class BidDocumentController {
                     List<String> allPaths = parseDocumentPaths(bid.getDocumentPaths());
                     allPaths.addAll(savedFileNames);
                     
-                    String jsonPaths = allPaths.toString().replace(" ", "");
+                    // Save as proper JSON array
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    String jsonPaths = mapper.writeValueAsString(allPaths);
                     bid.setDocumentPaths(jsonPaths);
                     bidService.saveBid(bid);
                 }

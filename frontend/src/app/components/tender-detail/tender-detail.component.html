@@ -43,6 +43,13 @@
         <span class="detail-value">{{ tender.location }}</span>
       </div>
 
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="detail-value">
+          <span class="status-badge" [ngClass]="getTenderStatus().toLowerCase()">{{ getTenderStatus() }}</span>
+        </span>
+      </div>
+
       <div class="detail-row" *ngIf="tender.contactNumber">
         <span class="detail-label">Contact</span>
         <span class="detail-value">
@@ -58,7 +65,7 @@
         </ul>
       </div>
 
-      <!-- Bid Section - Only show if tender is open (considering deadline) -->
+     
       <div class="bid-section" *ngIf="getTenderStatus() === 'OPEN'">
         <button 
           *ngIf="!isCreator() && !hasExistingBid" 
@@ -99,6 +106,18 @@
 
     <div class="modal-footer">
       <button 
+        *ngIf="isCreator() && getTenderStatus() === 'OPEN'" 
+        class="btn btn-warning" 
+        (click)="closeTender()">
+        Close Tender
+      </button>
+      <button 
+        *ngIf="isCreator() && getTenderStatus() === 'CLOSED'" 
+        class="btn btn-success" 
+        (click)="reopenTender()">
+        Reopen Tender
+      </button>
+      <button 
         *ngIf="isCreator()" 
         class="btn btn-danger" 
         (click)="deleteTender()">
@@ -108,7 +127,6 @@
     </div>
   </div>
 
-  <!-- Bid Form Modal -->
   <div class="bid-form-overlay" *ngIf="showBidForm" (click)="closeBidForm()">
     <div class="bid-form-modal" (click)="$event.stopPropagation()">
       <div class="bid-form-header">
@@ -119,23 +137,23 @@
       <div class="bid-form-body">
         <div class="bid-error" *ngIf="bidError">{{ bidError }}</div>
         
-        <!-- Loading bidder profile -->
+        
         <div class="loading" *ngIf="loadingProfiles">
           Loading your bidder profile...
         </div>
         
-        <!-- Bidder Profile Info -->
+       
         <div class="bidder-info" *ngIf="!loadingProfiles && bidderProfiles.length > 0">
           <p>Bidding as: <strong>{{ bidderProfiles[0]?.companyName }}</strong> ({{ bidderProfiles[0]?.type }})</p>
         </div>
         
-        <!-- No bidder profile - show warning and link -->
+      
         <div class="no-bidder-warning" *ngIf="!loadingProfiles && bidderProfiles.length === 0">
           <p> You don't have any bidder profile. Please create one first.</p>
           <a href="/bidder" class="btn btn-primary">Go to Bidder Management</a>
         </div>
         
-        <!-- Bid Form Fields (only show if bidder profile exists) -->
+        
         <ng-container *ngIf="bidderProfiles.length > 0 && !loadingProfiles">
           <div class="form-group">
             <label for="bidAmount">Bid Amount (₹) *</label>
@@ -176,7 +194,7 @@
     </div>
   </div>
 
-  <!-- View Bids Modal for Tender Creator -->
+
   <app-tender-bids 
     *ngIf="showBids && tender" 
     [tender]="tender"

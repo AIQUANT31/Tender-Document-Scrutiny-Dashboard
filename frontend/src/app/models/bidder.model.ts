@@ -1,4 +1,4 @@
-// Shared models for Bidder functionality
+
 
 export interface BidderData {
   id: number;

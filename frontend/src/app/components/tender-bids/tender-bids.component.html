@@ -1,6 +1,6 @@
 <div class="bids-overlay" *ngIf="tender">
   <div class="bids-modal">
-    <!-- Header -->
+
     <div class="bids-header">
       <div class="header-content">
         <h2> Bids for Tender</h2>
@@ -9,7 +9,7 @@
       <button class="close-btn" (click)="close()">×</button>
     </div>
 
-    <!-- Statistics Cards -->
+   
     <div class="stats-container">
       <div class="stat-card total">
         <span class="stat-number">{{ stats.totalBids }}</span>
@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <!-- Budget Info -->
+
     <div class="budget-info" *ngIf="tender.budget">
       <span class="budget-label">Tender Budget:</span>
       <span class="budget-value">{{ formatCurrency(tender.budget) }}</span>
@@ -39,26 +39,23 @@
       </span>
     </div>
 
-    <!-- Loading State -->
     <div class="loading-container" *ngIf="loading">
       <div class="spinner"></div>
       <p>Loading bids...</p>
     </div>
 
-    <!-- Error State -->
+    
     <div class="error-container" *ngIf="error && !loading">
       <p class="error-message">{{ error }}</p>
       <button class="retry-btn" (click)="loadBids()">Retry</button>
     </div>
 
-    <!-- Empty State -->
     <div class="empty-container" *ngIf="!loading && !error && bids.length === 0">
       <div class="empty-icon"></div>
       <p class="empty-message">No bids received yet</p>
       <p class="empty-submessage">Bidders haven't placed any bids on this tender yet.</p>
     </div>
 
-    <!-- Bids List -->
     <div class="bids-list" *ngIf="!loading && !error && bids.length > 0">
       <div class="bid-card" *ngFor="let bid of bids" (click)="viewBidDetails(bid); $event.stopPropagation()">
         <div class="bid-header">
@@ -98,7 +95,6 @@
       </div>
     </div>
 
-    <!-- Bid Detail Modal -->
     <div class="bid-detail-overlay" *ngIf="showBidDetail && selectedBid" (click)="closeBidDetail()">
       <div class="bid-detail-modal" (click)="$event.stopPropagation()">
         <div class="bid-detail-header">
@@ -107,7 +103,7 @@
         </div>
 
         <div class="bid-detail-content">
-          <!-- Bidder Information -->
+       
           <div class="detail-section">
             <h3>Bidder Information</h3>
             <div class="detail-grid">
@@ -134,7 +130,7 @@
             </div>
           </div>
 
-          <!-- Bid Information -->
+         
           <div class="detail-section">
             <h3> Bid Information</h3>
             <div class="detail-grid">
@@ -161,7 +157,6 @@
             </div>
           </div>
 
-          <!-- Proposal -->
           <div class="detail-section" *ngIf="selectedBid.proposalText">
             <h3> Proposal</h3>
             <div class="proposal-text">
@@ -169,7 +164,6 @@
             </div>
           </div>
 
-          <!-- Documents -->
           <div class="detail-section" *ngIf="hasDocuments(selectedBid)">
             <h3>Documents ({{ getDocumentPaths(selectedBid).length }})</h3>
             <div class="documents-list">
@@ -188,7 +182,6 @@
           </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="bid-detail-actions" *ngIf="tender.status === 'OPEN'">
           <button 
             class="action-btn accept" 

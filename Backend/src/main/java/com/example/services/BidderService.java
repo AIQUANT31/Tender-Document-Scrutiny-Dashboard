@@ -25,7 +25,7 @@ public class BidderService {
     private BidderRepository bidderRepository;
 
    
-    @CacheEvict(value = {"allBidders", "biddersByUser", "bidderStats"}, allEntries = true)
+    @CacheEvict(value = {"allBidders", "biddersByUser", "bidderStats", "dashboardData"}, allEntries = true)
     public Map<String, Object> createBidder(BidderRequest request) {
         Map<String, Object> response = new HashMap<>();
         
@@ -91,7 +91,7 @@ public class BidderService {
     }
 
     
-    @CacheEvict(value = {"allBidders", "bidderById", "biddersByUser", "bidderStats"}, allEntries = true)
+    @CacheEvict(value = {"allBidders", "bidderById", "biddersByUser", "bidderStats", "dashboardData"}, allEntries = true)
     public Map<String, Object> updateBidder(Long id, Long userId, BidderRequest request) {
         Map<String, Object> response = new HashMap<>();
         
@@ -160,7 +160,7 @@ public class BidderService {
         return response;
     }
 
-    @CacheEvict(value = {"allBidders", "bidderById", "biddersByUser", "bidderStats"}, allEntries = true)
+    @CacheEvict(value = {"allBidders", "bidderById", "biddersByUser", "bidderStats", "dashboardData"}, allEntries = true)
     public Map<String, Object> deleteBidder(Long id, Long userId) {
         Map<String, Object> response = new HashMap<>();
         

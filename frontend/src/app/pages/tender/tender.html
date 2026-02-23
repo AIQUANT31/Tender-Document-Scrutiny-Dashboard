@@ -10,8 +10,8 @@
     </div>
 
     <div class="tender-filters">
-      <input type="text" placeholder="Search tenders..." class="search-input" [(ngModel)]="searchTerm">
-      <select class="status-filter" [(ngModel)]="statusFilter">
+      <input type="text" placeholder="Search tenders..." class="search-input" [(ngModel)]="searchTerm" (ngModelChange)="onSearchOrFilterChange()">
+      <select class="status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onSearchOrFilterChange()">
         <option value="">All Status</option>
         <option value="OPEN">Open</option>
         <option value="CLOSED">Closed</option>
@@ -38,8 +38,8 @@
       Loading tenders...
     </div>
 
-    <div class="tender-list" *ngIf="!loading && tenders.length > 0; else noTenders">
-      <div class="tender-card" *ngFor="let tender of filteredTenders">
+    <div class="tender-list" *ngIf="!loading && filteredTenders.length > 0; else noTenders">
+      <div class="tender-card" *ngFor="let tender of paginatedTenders">
         <div class="tender-card-header" (click)="viewDetails(tender.id)">
           <h3>{{ tender.name }}</h3>
           <div class="tender-badges">
@@ -65,6 +65,14 @@
         <p>No tenders available. Click "Create New Tender" to add one.</p>
       </div>
     </ng-template>
+    
+    <!-- Pagination Component -->
+    <app-pagination 
+      [totalItems]="filteredTenders.length" 
+      [itemsPerPage]="itemsPerPage" 
+      [currentPage]="currentPage"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
   </main>
 
   

@@ -59,7 +59,13 @@
             id="deadline"
             [(ngModel)]="formData.deadline"
             name="deadline"
-            required>
+            required
+            (ngModelChange)="onDeadlineChange()">
+          <div class="deadline-status" *ngIf="formData.deadline">
+            <span class="status-preview" [class]="getDeadlineStatus().toLowerCase()">
+              Status will be: {{ getDeadlineStatus() }}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -32,13 +32,12 @@ export class BidderFormComponent {
   }
 
   onSubmit() {
-    // Validate form
     if (!this.formData.companyName || !this.formData.email) {
       alert('Please fill in all required fields');
       return;
     }
     
-    // Emit the form data to parent
+    
     this.submit.emit(this.formData);
   }
 

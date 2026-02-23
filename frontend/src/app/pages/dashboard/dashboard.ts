@@ -45,6 +45,8 @@ interface DashboardData {
   approvedBids: number;
   rejectedBids: number;
   totalBidders: number;
+  activeBidders: number;
+  inactiveBidders: number;
   recentTenders: TenderSummary[];
   recentBids: BidSummary[];
   recentBidders: BidderSummary[];
@@ -78,6 +80,8 @@ export class Dashboard implements OnInit {
   approvedBids = 0;
   rejectedBids = 0;
   totalBidders = 0;
+  activeBidders = 0;
+  inactiveBidders = 0;
   
   // Recent data
   recentTenders: TenderSummary[] = [];
@@ -117,6 +121,8 @@ export class Dashboard implements OnInit {
         this.approvedBids = data.approvedBids || 0;
         this.rejectedBids = data.rejectedBids || 0;
         this.totalBidders = data.totalBidders || 0;
+        this.activeBidders = data.activeBidders || 0;
+        this.inactiveBidders = data.inactiveBidders || 0;
         
         // Set recent data
         this.recentTenders = data.recentTenders || [];

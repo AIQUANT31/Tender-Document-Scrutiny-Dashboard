@@ -17,4 +17,6 @@ export class DashboardStatsComponent {
   @Input() approvedBids = 0;
   @Input() rejectedBids = 0;
   @Input() totalBidders = 0;
+  @Input() activeBidders = 0;
+  @Input() inactiveBidders = 0;
 }

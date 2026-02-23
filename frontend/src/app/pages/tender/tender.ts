@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { NavComponent } from '../../components/nav/nav.component';
 import { TenderFormComponent } from '../../components/button/create-tender/tender-form.component';
 import { TenderDetailComponent } from '../../components/tender-detail/tender-detail.component';
+import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 interface TenderData {
   id: number;
@@ -28,7 +29,7 @@ interface TenderData {
 @Component({
   selector: 'app-tender-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavComponent, TenderFormComponent, TenderDetailComponent, FormsModule],
+  imports: [CommonModule, RouterModule, NavComponent, TenderFormComponent, TenderDetailComponent, FormsModule, PaginationComponent],
   templateUrl: './tender.html',
   styleUrl: './tender.css'
 })
@@ -42,6 +43,10 @@ export class TenderPage implements OnInit {
   loading = false;
   searchTerm = '';
   statusFilter = '';
+  
+  
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {
     if (typeof localStorage !== 'undefined') {
@@ -51,7 +56,7 @@ export class TenderPage implements OnInit {
         this.userId = parseInt(userIdStr, 10);
       }
     }
-    // Load tenders immediately on page load
+    
     this.loadTenders();
   }
 
@@ -72,52 +77,59 @@ export class TenderPage implements OnInit {
             updatedAt: this.normalizeDate(tender.updatedAt),
             deadline: this.normalizeDate(tender.deadline)
           };
-          // Auto-close tenders whose deadline has passed
+        
           return this.checkAndUpdateTenderStatus(normalizedTender);
         });
         this.loading = false;
-        this.cdr.detectChanges(); // Force change detection
+        this.cdr.detectChanges(); 
       },
       error: (error) => {
         console.error('Error loading tenders:', error);
         this.loading = false;
-        this.cdr.detectChanges(); // Force change detection
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // Check if deadline has passed and update status to CLOSED
+  
   checkAndUpdateTenderStatus(tender: TenderData): TenderData {
-    if (tender.deadline && tender.status !== 'CLOSED') {
-      const deadlineDate = new Date(tender.deadline);
+    if (tender.deadline) {
+      
+      const deadlineStr = tender.deadline;
+      const deadlineDate = new Date(deadlineStr);
       const now = new Date();
-      // Set time to end of day for comparison
-      now.setHours(23, 59, 59, 999);
-      if (deadlineDate < now) {
+      
+      
+      if (deadlineDate <= now) {
         return { ...tender, status: 'CLOSED' };
       }
     }
+    
     return tender;
   }
 
-  // Helper method to get display status (considering deadline)
+  
   getTenderStatus(tender: TenderData): string {
-    if (tender.deadline && tender.status !== 'CLOSED') {
-      const deadlineDate = new Date(tender.deadline);
+  
+    if (tender.deadline) {
+      // Parse deadline date - handle ISO format
+      const deadlineStr = tender.deadline;
+      const deadlineDate = new Date(deadlineStr);
       const now = new Date();
-      now.setHours(23, 59, 59, 999);
-      if (deadlineDate < now) {
+      
+     
+      if (deadlineDate <= now) {
         return 'CLOSED';
       }
     }
-    return tender.status;
+    return tender.status || 'OPEN';
   }
 
-  // Helper to normalize date formats (handles multiple formats: arrays, comma-separated strings, and ISO 8601)
+  
   normalizeDate(dateValue: any): string | null {
     if (!dateValue) return null;
     
-    // Handle array format: [2026, 2, 13, 16, 32, 47, 90138000]
+   
     if (Array.isArray(dateValue) && dateValue.length >= 6) {
       const [year, month, day, hours, minutes, seconds] = dateValue;
       const date = new Date(year, month - 1, day, hours, minutes, seconds);
@@ -126,16 +138,15 @@ export class TenderPage implements OnInit {
     
     const dateStr = String(dateValue);
     
-    // If already in ISO format, return as-is
+
     if (dateStr.includes('T') || dateStr.includes('-')) {
       return dateStr;
     }
     
-    // Handle comma-separated format: "2026,2,13,16,58,39,480887000"
     const parts = dateStr.split(',');
     if (parts.length >= 6) {
       const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed
+      const month = parseInt(parts[1], 10) - 1; 
       const day = parseInt(parts[2], 10);
       const hours = parseInt(parts[3], 10);
       const minutes = parseInt(parts[4], 10);
@@ -188,7 +199,7 @@ export class TenderPage implements OnInit {
           if (response.success) {
             alert('Tender created successfully!');
             this.showTenderForm = false;
-            // Clear cache and reload
+          
             this.tenders = [];
             this.loadTenders();
           } else {
@@ -204,15 +215,14 @@ export class TenderPage implements OnInit {
           console.error('Full error object:', JSON.stringify(error, null, 2));
           
           let errorMessage = 'Error creating tender. Please try again.';
-          
-          // Try to extract more specific error information
+      
           if (error.error && error.error.message) {
             errorMessage = 'Error: ' + error.error.message;
           } else if (error.message) {
             errorMessage = 'Error: ' + error.message;
           }
           
-          // Check if it's a validation error
+        
           if (error.status === 400 && error.error) {
             if (error.error.message && error.error.message.includes('foreign key')) {
               errorMessage = 'Error: Invalid user. Please logout and login again.';
@@ -303,8 +313,30 @@ export class TenderPage implements OnInit {
     return this.tenders.filter(tender => {
       const matchesSearch = tender.name.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
                            tender.description.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchesStatus = this.statusFilter === '' || tender.status === this.statusFilter;
+    
+      const computedStatus = this.getTenderStatus(tender);
+      const matchesStatus = this.statusFilter === '' || computedStatus === this.statusFilter;
       return matchesSearch && matchesStatus;
     });
+  }
+  
+  
+  get paginatedTenders(): TenderData[] {
+    const filtered = this.filteredTenders;
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  }
+  
+  onPageChange(newPage: number): void {
+    this.currentPage = newPage;
+    const tenderList = document.querySelector('.tender-list');
+    if (tenderList) {
+      tenderList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  onSearchOrFilterChange(): void {
+    this.currentPage = 1;
   }
 }

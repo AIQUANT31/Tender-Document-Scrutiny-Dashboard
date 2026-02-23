@@ -53,31 +53,28 @@ export class PlaceBidComponent implements OnInit {
   loading = true;
   error: string | null = null;
   
-  // Bid form
+
   bidAmount = '';
   proposalText = '';
   contactNumber = '';
   bidError = '';
   
-  // Bidder profiles
+ 
   bidderProfiles: BidderProfile[] = [];
   loadingProfiles = false;
   bidderId: number | null = null;
   
-  // Current user's ID
+
   currentUserId: number | null = null;
   
-  // Created bid ID for document upload
   createdBidId: number | null = null;
   
-  // Selected file for upload
   selectedBidFile: File | null = null;
   selectedBidFiles: File[] = [];
   
-  // Required documents from tender
   requiredDocumentsList: string[] = [];
   
-  // Document validation
+
   documentValidationResult: ValidationResponse | null = null;
   isValidatingDocuments = false;
 
@@ -88,14 +85,14 @@ export class PlaceBidComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private documentValidation: DocumentValidationService
   ) {
-    // Get userId from localStorage
+  
     if (typeof localStorage !== 'undefined') {
       const userIdStr = localStorage.getItem('userId');
       if (userIdStr) {
         this.currentUserId = parseInt(userIdStr, 10);
       }
       
-      // Get bidderId from localStorage
+      
       const bidderIdStr = localStorage.getItem('bidderId');
       if (bidderIdStr) {
         this.bidderId = parseInt(bidderIdStr, 10);
@@ -120,24 +117,24 @@ export class PlaceBidComponent implements OnInit {
         this.tender = data;
         this.loading = false;
         
-        // Check if tender is still open
+        
         if (this.tender.status === 'CLOSED' || this.isDeadlinePassed()) {
           this.error = 'This tender is closed. Bids are no longer accepted.';
           this.loading = false;
           return;
         }
         
-        // Check if user is the creator
+      
         if (this.currentUserId && this.tender.createdBy === this.currentUserId) {
           this.error = 'You cannot bid on your own tender.';
           this.loading = false;
           return;
         }
         
-        // Parse required documents
+        
         this.parseRequiredDocuments();
         
-        // Load bidder profiles
+      
         this.loadBidderProfiles();
         this.cdr.detectChanges();
       },
@@ -154,8 +151,8 @@ export class PlaceBidComponent implements OnInit {
     if (!this.tender?.deadline) return false;
     const deadlineDate = new Date(this.tender.deadline);
     const now = new Date();
-    now.setHours(23, 59, 59, 999);
-    return deadlineDate < now;
+  
+    return deadlineDate <= now;
   }
   
   parseRequiredDocuments() {
@@ -165,12 +162,12 @@ export class PlaceBidComponent implements OnInit {
     }
     
     try {
-      // Try to parse as JSON first
+      
       const parsed = JSON.parse(this.tender.requiredDocuments);
       if (Array.isArray(parsed)) {
         this.requiredDocumentsList = parsed;
       } else {
-        // If not JSON, try comma-separated
+        
         this.requiredDocumentsList = this.tender.requiredDocuments.split(',').map(d => d.trim()).filter(d => d);
       }
     } catch {
@@ -207,17 +204,14 @@ export class PlaceBidComponent implements OnInit {
     });
   }
 
-  /**
-   * Validates documents BEFORE submission using CONTENT validation
-   * Extracts text from PDF and checks for required keywords
-   */
+ 
   async validateDocumentsAsync(): Promise<boolean> {
-    // If no required documents, skip validation
+  
     if (!this.hasRequiredDocuments) {
       return true;
     }
     
-    // If documents are required but none uploaded
+    
     if (!this.selectedBidFiles || this.selectedBidFiles.length === 0) {
       this.bidError = 'This tender requires documents: ' + this.requiredDocumentsList.join(', ');
       return false;
@@ -228,7 +222,7 @@ export class PlaceBidComponent implements OnInit {
     this.cdr.detectChanges();
     
     try {
-      // Use backend validation with content extraction
+      
       const result = await this.documentValidation.validateWithRules(
         this.requiredDocumentsList,
         this.selectedBidFiles
@@ -238,20 +232,17 @@ export class PlaceBidComponent implements OnInit {
       this.isValidatingDocuments = false;
       
       if (!result?.valid) {
-        // Don't set bidError here - it's shown in validation-result div
-        // Block submission if validation fails
+       
         this.cdr.detectChanges();
         return false;
       }
       
-      // Check for duplicate documents - block submission if duplicates found
       if (result?.duplicateDocuments && result.duplicateDocuments.length > 0) {
         this.bidError = 'Duplicate documents detected. Please remove duplicates before submitting.';
         this.cdr.detectChanges();
         return false;
       }
-      
-      // Show matched documents
+     
       if (result?.matchedDocuments && result.matchedDocuments.length > 0) {
       }
       
@@ -268,9 +259,7 @@ export class PlaceBidComponent implements OnInit {
     }
   }
 
-  /**
-   * Fallback client-side validation (if backend unavailable)
-   */
+ 
   validateDocumentsClientSide(): boolean {
     if (!this.hasRequiredDocuments || !this.selectedBidFiles || this.selectedBidFiles.length === 0) {
       return true;
@@ -285,7 +274,7 @@ export class PlaceBidComponent implements OnInit {
     this.documentValidationResult = result;
     
     if (!result.valid) {
-      // Don't set bidError here - message is shown in validation-result div
+     
       return false;
     }
     
@@ -305,13 +294,11 @@ export class PlaceBidComponent implements OnInit {
       return;
     }
 
-    // Validate documents BEFORE submitting (CONTENT-BASED using OCR)
+    
     const isValid = await this.validateDocumentsAsync();
     if (!isValid) {
-      return; // Error message already set in validateDocumentsAsync
+      return; 
     }
-
-    // If files are selected, submit with FormData
     if (this.selectedBidFiles && this.selectedBidFiles.length > 0) {
       const formData = new FormData();
       formData.append('tenderId', this.tender.id.toString());
@@ -321,7 +308,7 @@ export class PlaceBidComponent implements OnInit {
       formData.append('contactNumber', this.contactNumber);
       formData.append('status', 'PENDING');
       
-      // Append first file - backend expects 'file' parameter for single file
+    
       formData.append('file', this.selectedBidFiles[0]);
 
       this.http.post<any>('http://localhost:8080/api/bids/create-with-document', formData).subscribe({
@@ -329,7 +316,7 @@ export class PlaceBidComponent implements OnInit {
             console.log('Bid response:', response);
           if (response.success) {
             
-            // If there are more files, upload them separately
+            
             if (this.selectedBidFiles.length > 1) {
               const additionalFiles = this.selectedBidFiles.slice(1);
               const docFormData = new FormData();

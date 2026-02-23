@@ -25,4 +25,7 @@ public interface BidderRepository extends JpaRepository<Bidder, Long> {
     
     @Query("SELECT COUNT(b) FROM Bidder b")
     long countTotalBidders();
+    
+    @Query("SELECT b.status, COUNT(b) FROM Bidder b GROUP BY b.status")
+    List<Object[]> countByStatusGrouped();
 }

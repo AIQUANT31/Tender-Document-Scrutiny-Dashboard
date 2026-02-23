@@ -20,7 +20,7 @@ export class Signup {
   constructor(private http: HttpClient, private router: Router) {}
 
   signup() {
-    // Validate input
+  
     if (!this.username || !this.email || !this.password) {
       this.message = 'Please fill in all fields';
       this.isSuccess = false;
@@ -43,11 +43,11 @@ export class Signup {
           this.isSuccess = response.message === 'User registered successfully!';
           if (this.isSuccess) {
             alert('Signup successful! Redirecting to login...');
-            // Clear form after successful signup
+            
             this.username = '';
             this.email = '';
             this.password = '';
-            // Redirect to login page after a short delay
+          
             setTimeout(() => {
               this.router.navigate(['/login']);
             }, 1500);

@@ -32,10 +32,7 @@ public class BidController {
 
     
 
-    /**
-     * Validate document CONTENT using OCR - This checks actual PDF content!
-     * Uses rule-based keyword matching on extracted text
-     */
+  
     @PostMapping("/validate-content")
     public ResponseEntity<DocumentValidationResponse> validateDocumentContent(
             @RequestParam("requiredDocuments") String requiredDocs,
@@ -105,9 +102,7 @@ public class BidController {
         }
     }
 
-    /**
-     * Validate with rules - combines filename and content validation
-     */
+    
     @PostMapping("/validate-with-rules")
     public ResponseEntity<DocumentValidationResponse> validateWithRules(
             @RequestParam("requiredDocuments") String requiredDocs,
@@ -189,21 +184,20 @@ public class BidController {
         }
     }
 
-    // Get all bids for a specific tender
+
     @GetMapping("/tender/{tenderId}")
     public ResponseEntity<List<Bid>> getBidsByTender(@PathVariable Long tenderId) {
         List<Bid> bids = bidService.getBidsByTender(tenderId);
         return ResponseEntity.ok(bids);
     }
 
-    //  Get all bids from a specific bidder
+    
     @GetMapping("/bidder/{bidderId}")
     public ResponseEntity<List<Bid>> getBidsByBidder(@PathVariable Long bidderId) {
         List<Bid> bids = bidService.getBidsByBidder(bidderId);
         return ResponseEntity.ok(bids);
     }
 
-     //    Get bids with tender details
     @GetMapping("/bidder/{bidderId}/with-tenders")
     public ResponseEntity<List<com.example.dto.BidWithTenderResponse>> getBidsWithTenderDetails(
             @PathVariable Long bidderId) {
@@ -211,7 +205,6 @@ public class BidController {
         return ResponseEntity.ok(bids);
     }
 
-//   Get a specific bid by ID
     @GetMapping("/{id}")
     public ResponseEntity<Bid> getBidById(@PathVariable Long id) {
         Bid bid = bidService.getBidById(id);
@@ -222,21 +215,21 @@ public class BidController {
         }
     }
 
-    // Get bid statistics for a tender
+    
     @GetMapping("/tender/{tenderId}/stats")
     public ResponseEntity<Map<String, Object>> getBidStats(@PathVariable Long tenderId) {
         Map<String, Object> stats = bidService.getBidStats(tenderId);
         return ResponseEntity.ok(stats);
     }
 
-//  Get bids with bidder details for a tender
+
     @GetMapping("/tender/{tenderId}/with-bidders")
     public ResponseEntity<List<BidWithBidderResponse>> getBidsWithBidderDetails(@PathVariable Long tenderId) {
         List<BidWithBidderResponse> bids = bidService.getBidsWithBidderDetails(tenderId);
         return ResponseEntity.ok(bids);
     }
 
-//    update bid status
+
     @PutMapping("/{id}/status")
     public ResponseEntity<Map<String, Object>> updateBidStatus(
             @PathVariable Long id, 
@@ -249,7 +242,7 @@ public class BidController {
         }
     }
 
-//    delete bid 
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deleteBid(
             @PathVariable Long id, 

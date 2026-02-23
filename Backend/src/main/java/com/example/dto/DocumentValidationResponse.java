@@ -2,9 +2,6 @@ package com.example.dto;
 
 import java.util.List;
 
-/**
- * DTO for document validation response
- */
 public class DocumentValidationResponse {
     
     private boolean valid;

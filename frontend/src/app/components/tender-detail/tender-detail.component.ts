@@ -79,18 +79,18 @@ export class TenderDetailComponent {
   loadingBids = false;
   hasExistingBid = false;
   
-  // View bids modal
+  
   showBids = false;
   bidCount = 0;
   
-  // Current user's bidder profiles
+ 
   bidderProfiles: BidderProfile[] = [];
   loadingProfiles = false;
   
-  // Current user's bidder ID (stored in localStorage)
+ 
   bidderId: number | null = null;
 
-  // Load bid count for the tender
+ 
   loadBidCount() {
     if (!this.tender) return;
     
@@ -108,13 +108,13 @@ export class TenderDetailComponent {
   }
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private router: Router) {
-    // Try to get bidderId from localStorage
+  
     const bidderIdStr = localStorage.getItem('bidderId');
     if (bidderIdStr) {
       this.bidderId = parseInt(bidderIdStr, 10);
     }
     
-    // Try to get userId from localStorage if not provided as input
+    
     const userIdStr = localStorage.getItem('userId');
     if (userIdStr) {
       this.currentUserId = parseInt(userIdStr, 10);
@@ -127,11 +127,11 @@ export class TenderDetailComponent {
     this.onClose.emit();
   }
 
-  // Open bids view for tender creator
+
   openBids() {
     console.log('Opening called tender', this.tender?.id);
     this.showBids = true;
-    // Reload bids when opening
+
     this.cdr.detectChanges();
      console.log('showBids set to:', this.showBids);
   }
@@ -150,17 +150,69 @@ export class TenderDetailComponent {
     }
   }
 
+  closeTender() {
+    if (this.tender && this.currentUserId && this.tender.createdBy === this.currentUserId) {
+      if (confirm('Are you sure you want to close this tender? Once closed, no more bids can be placed.')) {
+        this.http.put<any>(`http://localhost:8080/api/tenders/${this.tender.id}/status?status=CLOSED`, {}).subscribe({
+          next: (response) => {
+            if (response.success) {
+              alert('Tender closed successfully!');
+              
+              if (this.tender) {
+                this.tender.status = 'CLOSED';
+              }
+              this.onUpdate.emit();
+              this.cdr.detectChanges();
+            } else {
+              alert(response.message || 'Error closing tender');
+            }
+          },
+          error: (error) => {
+            console.error('Error closing tender:', error);
+            alert('Error closing tender. Please try again.');
+          }
+        });
+      }
+    }
+  }
+
+ 
+  reopenTender() {
+    if (this.tender && this.currentUserId && this.tender.createdBy === this.currentUserId) {
+      if (confirm('Are you sure you want to reopen this tender?')) {
+        this.http.put<any>(`http://localhost:8080/api/tenders/${this.tender.id}/status?status=OPEN`, {}).subscribe({
+          next: (response) => {
+            if (response.success) {
+              alert('Tender reopened successfully!');
+              // Update local tender status
+              if (this.tender) {
+                this.tender.status = 'OPEN';
+              }
+              this.onUpdate.emit();
+              this.cdr.detectChanges();
+            } else {
+              alert(response.message || 'Error reopening tender');
+            }
+          },
+          error: (error) => {
+            console.error('Error reopening tender:', error);
+            alert('Error reopening tender. Please try again.');
+          }
+        });
+      }
+    }
+  }
+
   isCreator(): boolean {
     return this.currentUserId !== null && 
            this.tender !== null && 
            this.tender.createdBy === this.currentUserId;
   }
 
-  // Check if user can bid (not the creator and tender is open)
+
   canBid(): boolean {
     if (!this.tender) return false;
-    
-    // Check if tender is closed based on deadline
+   
     const isDeadlinePassed = this.isTenderDeadlinePassed();
     
     return !isDeadlinePassed && 
@@ -169,16 +221,16 @@ export class TenderDetailComponent {
            this.tender.createdBy !== this.currentUserId;
   }
 
-  // Check if tender deadline has passed
+  
   isTenderDeadlinePassed(): boolean {
     if (!this.tender?.deadline) return false;
     const deadlineDate = new Date(this.tender.deadline);
     const now = new Date();
-    now.setHours(23, 59, 59, 999);
-    return deadlineDate < now;
+    
+    return deadlineDate <= now;
   }
 
-  // Get the actual tender status considering deadline
+  
   getTenderStatus(): string {
     if (!this.tender) return '';
     if (this.tender.status === 'CLOSED') return 'CLOSED';
@@ -186,14 +238,14 @@ export class TenderDetailComponent {
     return this.tender.status;
   }
 
-  // Open bid form - redirect to new page
+ 
   openBidForm() {
     if (this.tender) {
       this.router.navigate(['/place-bid', this.tender.id]);
     }
   }
 
-  // Load bidder profiles for the current user
+  
   loadBidderProfiles() {
     if (!this.currentUserId) return;
     
@@ -201,7 +253,7 @@ export class TenderDetailComponent {
     this.http.get<BidderProfile[]>(`http://localhost:8080/api/bidders/user/${this.currentUserId}`).subscribe({
       next: (profiles) => {
         this.bidderProfiles = profiles;
-        // If user has a profile, set it as the selected bidder
+
         if (profiles.length > 0) {
           this.bidderId = profiles[0].id;
           localStorage.setItem('bidderId', this.bidderId.toString());
@@ -221,7 +273,6 @@ export class TenderDetailComponent {
     this.showBidForm = false;
   }
 
-  // Check if user already has a bid on this tender
   checkExistingBid() {
     if (!this.tender || !this.bidderId) return;
     

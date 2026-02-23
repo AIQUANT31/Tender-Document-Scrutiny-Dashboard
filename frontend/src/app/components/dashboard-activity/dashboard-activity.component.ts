@@ -45,6 +45,7 @@ export class DashboardActivityComponent {
       case 'OPEN':
       case 'ACTIVE':
       case 'APPROVED':
+      case 'WINNING':
         return 'status-success';
       case 'CLOSED':
       case 'REJECTED':

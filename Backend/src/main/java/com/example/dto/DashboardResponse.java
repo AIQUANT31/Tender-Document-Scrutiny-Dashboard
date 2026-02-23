@@ -22,10 +22,13 @@ public class DashboardResponse {
     private long approvedBids;
     private long rejectedBids;
     private long totalBidders;
+    private long activeBidders;
+    private long inactiveBidders;
     
     // Charts data
     private List<StatusCount> tenderStatusData;
     private List<StatusCount> bidStatusData;
+    private List<StatusCount> bidderStatusData;
     private List<MonthlyData> monthlyTenders;
     private List<MonthlyData> monthlyBids;
     

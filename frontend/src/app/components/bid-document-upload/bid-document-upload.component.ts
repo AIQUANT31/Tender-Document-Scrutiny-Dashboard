@@ -37,10 +37,9 @@ export class BidDocumentUploadComponent {
         // Validate file type
         if (file.type !== 'application/pdf') {
           this.uploadError = 'Only PDF files are allowed';
-          continue; // Skip invalid files instead of stopping
+          continue; 
         }
 
-        // Validate file size (max 50MB)
         if (file.size > 50 * 1024 * 1024) {
           this.uploadError = 'File size must be less than 50MB';
           continue; // Skip oversized files instead of stopping
@@ -56,7 +55,7 @@ export class BidDocumentUploadComponent {
       this.uploadError = null;
       this.uploadSuccess = false;
       
-      // Emit files to parent
+     
       this.filesSelected.emit(this.selectedFiles);
     }
     

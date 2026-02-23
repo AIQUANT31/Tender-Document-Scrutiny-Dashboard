@@ -1,4 +1,4 @@
-<!-- Stats Cards Row -->
+
 <div class="stats-row">
   <div class="stat-card tender-stat">
     <div class="stat-icon"></div>
@@ -16,9 +16,10 @@
     <div class="stat-info">
       <h3>Total Bidders</h3>
       <p class="stat-value">{{ totalBidders }}</p>
-      <!-- <div class="stat-sub">
-        <span class="rejected">{{ rejectedBids }} Rejected</span>
-      </div> -->
+      <div class="stat-sub">
+        <span class="active">{{ activeBidders }} Active</span>
+        <span class="inactive">{{ inactiveBidders }} Inactive</span>
+      </div>
     </div>
   </div>
 
@@ -27,10 +28,10 @@
     <div class="stat-info">
       <h3>Total Bids</h3>
       <p class="stat-value">{{ totalBids }}</p>
-      <!-- <div class="stat-sub">
-        Dashb<span class="pending">{{ pendingBids }} Pending</span>
-        <span class="approved">{{ approvedBids }} Approved</span>
-      </div> -->
+      <div class="stat-sub">
+        <!-- <span class="pending">{{ pendingBids }} Pending</span>
+        <span class="approved">{{ approvedBids }} Approved</span> -->
+      </div>
     </div>
   </div>
 
