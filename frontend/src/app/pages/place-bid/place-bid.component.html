@@ -1,0 +1,140 @@
+<app-nav></app-nav>
+
+<div class="place-bid-container">
+  <div class="bid-page-header">
+    <button class="back-btn" (click)="goBack()">← Back to Tenders</button>
+  </div>
+  
+  <div class="bid-content" *ngIf="tender">
+    <div class="tender-info-card">
+      <h2>{{ tender.name }}</h2>
+      <p class="tender-description">{{ tender.description }}</p>
+      <div class="tender-details">
+        <div class="detail-item">
+          <span class="label">Budget:</span>
+          <span class="value">₹{{ tender.budget | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="tender.deadline">
+          <span class="label">Deadline:</span>
+          <span class="value">{{ tender.deadline | date:'medium' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="tender.location">
+          <span class="label">Location:</span>
+          <span class="value">{{ tender.location }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Status:</span>
+          <span class="value status-badge" [class]="tender.status.toLowerCase()">{{ tender.status }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bid-form-card">
+      <h3>Place Your Bid</h3>
+      
+      <!-- Validation Status -->
+      <!-- <div class="validation-status" *ngIf="isValidatingDocuments">
+        <p class="validating">🔄 Validating documents using OCR... Please wait</p>
+      </div>
+       -->
+      
+      <!-- Loading bidder profile -->
+      <div class="loading" *ngIf="loadingProfiles">
+        Loading your bidder profile...
+      </div>
+      
+      <!-- Bidder Profile Info -->
+      <div class="bidder-info" *ngIf="!loadingProfiles && bidderProfiles.length > 0">
+        <p>Bidding as: <strong>{{ bidderProfiles[0]?.companyName }}</strong> ({{ bidderProfiles[0]?.type }})</p>
+      </div>
+      
+      <!-- No bidder profile - show warning and link -->
+      <div class="no-bidder-warning" *ngIf="!loadingProfiles && bidderProfiles.length === 0">
+        <p> You don't have any bidder profile. Please create one first.</p>
+        <a routerLink="/bidder" class="btn btn-primary">Go to Bidder Management</a>
+      </div>
+      
+      <!-- Bid Form Fields (only show if bidder profile exists) -->
+      <ng-container *ngIf="bidderProfiles.length > 0 && !loadingProfiles">
+        <div class="form-group">
+          <label for="bidAmount">Bid Amount (₹) *</label>
+          <input 
+            type="number" 
+            id="bidAmount" 
+            [(ngModel)]="bidAmount" 
+            placeholder="Enter your bid amount"
+            min="1"
+            step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="proposalText">Proposal / Description</label>
+          <textarea 
+            id="proposalText" 
+            [(ngModel)]="proposalText" 
+            placeholder="Describe your proposal..."
+            rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="contactNumber">Contact Number</label>
+          <input 
+            type="tel" 
+            id="contactNumber" 
+            [(ngModel)]="contactNumber" 
+            placeholder="Enter contact number">
+        </div>
+
+        <!-- Document Upload Section - shows before bid submission -->
+        <app-bid-document-upload 
+          *ngIf="tender" 
+          [bidId]="createdBidId" 
+          [tenderId]="tender.id"
+          [requiredDocuments]="requiredDocumentsList"
+          (filesSelected)="onFilesSelected($event)">
+        </app-bid-document-upload>
+      
+      <div class="validation-result" *ngIf="documentValidationResult && !isValidatingDocuments">
+        <!-- Keep the UI simple: show only validated + missing documents -->
+        <div *ngIf="documentValidationResult.matchedDocuments && documentValidationResult.matchedDocuments.length > 0" class="matched-docs">
+          <p>Validated documents:</p>
+          <ul>
+            <li *ngFor="let doc of documentValidationResult.matchedDocuments">{{ doc }}</li>
+          </ul>
+        </div>
+        
+        <div *ngIf="documentValidationResult.missingDocuments && documentValidationResult.missingDocuments.length > 0" class="missing-docs">
+          <p>Missing documents:</p>
+          <ul>
+            <li *ngFor="let doc of documentValidationResult.missingDocuments">{{ doc }}</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="bid-error" *ngIf="bidError">{{ bidError }}</div>
+      
+
+        <div class="bid-form-actions">
+          <button class="btn btn-secondary" (click)="goBack()">Cancel</button>
+          <button class="btn btn-primary" (click)="submitBid()">
+            {{ createdBidId ? 'Bid Submitted (ID: ' + createdBidId + ')' : 'Submit Bid' }}
+          </button>
+        </div>
+        
+        
+        <div class="bid-success-actions" *ngIf="createdBidId">
+          <button class="btn btn-primary" (click)="goBack()">Back to Tenders</button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="!tender && loading">
+    <p>Loading tender details...</p>
+  </div>
+
+  <div class="error-container" *ngIf="error">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="goBack()">Back to Tenders</button>
+  </div>
+</div>

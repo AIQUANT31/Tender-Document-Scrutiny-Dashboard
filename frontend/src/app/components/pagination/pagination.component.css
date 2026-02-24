@@ -1,0 +1,142 @@
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 20px;
+  margin-top: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+}
+
+.page-info {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.page-info strong {
+  color: #212529;
+  font-weight: 700;
+}
+
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  min-width: 42px;
+  height: 42px;
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+  color: #495057;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #badcde 0%, #764ba2 100%);
+  color: #fff;
+  border-color: #667eea;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+}
+
+
+.pagination-btn.active:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+  border-color: #5a6fd6;
+}
+
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #f8f9fa;
+  box-shadow: none;
+  transform: none;
+}
+
+
+.page-number {
+  min-width: 42px;
+  text-align: center;
+}
+
+.pagination-btn.arrow-btn {
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .pagination-container {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .pagination-btn {
+    padding: 8px 10px;
+    min-width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .page-info {
+    font-size: 12px;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .pagination-btn {
+    padding: 6px 8px;
+    min-width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .page-number {
+    display: none;
+  }
+
+
+  .pagination-btn.page-number:nth-child(2),
+  .pagination-btn.page-number:nth-child(3),
+  .pagination-btn.page-number:nth-last-child(2),
+  .pagination-btn.page-number:nth-last-child(3) {
+    display: flex;
+  }
+}

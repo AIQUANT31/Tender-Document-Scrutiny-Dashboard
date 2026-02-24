@@ -1,0 +1,32 @@
+.bidder-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stat-number {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  color: #805464;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .bidder-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

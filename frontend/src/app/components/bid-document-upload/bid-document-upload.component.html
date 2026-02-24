@@ -1,0 +1,78 @@
+<div class="document-upload-container">
+ 
+  <div class="required-docs-checklist" *ngIf="hasRequiredDocuments">
+    <h5> Required Documents Checklist:</h5>
+    <div class="doc-checklist">
+      <div class="doc-check-item" *ngFor="let doc of requiredDocuments">
+        <span class="doc-check-icon" [class.uploaded]="uploadSuccess"></span>
+        <span class="doc-check-name">{{ doc }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="upload-section">
+    <h4>Upload Bid Documents (PDF)</h4>
+    <p class="upload-hint">Upload your documents in PDF format (Max 50MB each)</p>
+
+  
+    <div class="file-input-wrapper" *ngIf="selectedFiles.length === 0">
+      <input 
+        type="file" 
+        id="bidDocument" 
+        accept=".pdf,application/pdf"
+        (change)="onFilesSelected($event)"
+        multiple
+        #fileInput>
+      <label for="bidDocument" class="file-label">
+        <span class="file-icon"></span>
+        <span class="file-text">Choose PDF Files</span>
+      </label>
+    </div>
+
+    <div class="selected-files" *ngIf="selectedFiles.length > 0 && !uploadSuccess">
+      <div class="files-header">
+        <span>{{ selectedFiles.length }} file(s) selected</span>
+        <button class="btn btn-small btn-secondary" (click)="clearFiles()">Clear All</button>
+      </div>
+      <div class="file-item" *ngFor="let file of selectedFiles; let i = index">
+        
+        <div class="file-info">
+          <p class="file-name">{{ file.name }}</p>
+          <p class="file-size">{{ (file.size / 1024 / 1024) | number:'1.2-2' }} MB</p>
+        </div>
+        <button class="btn-remove" (click)="removeFile(i)">✕</button>
+      </div>
+    </div>
+
+
+    <div class="add-more-files" *ngIf="selectedFiles.length > 0 && !uploadSuccess">
+      <input 
+        type="file" 
+        id="bidDocumentMore" 
+        accept=".pdf,application/pdf"
+        (change)="onFilesSelected($event)"
+        multiple
+        #fileInputMore>
+      <label for="bidDocumentMore" class="btn btn-secondary btn-small">
+        + Add More Files
+      </label>
+    </div>
+
+    
+    <div class="upload-error" *ngIf="uploadError">
+      
+      <span>{{ uploadError }}</span>
+    </div>
+
+    <div class="upload-success" *ngIf="uploadSuccess">
+     
+      <p>{{ uploadedFileNames.length }} document(s) uploaded successfully!</p>
+      <div class="uploaded-documents">
+        <div class="uploaded-doc-item" *ngFor="let doc of uploadedFileNames">
+          
+          <span class="doc-name">{{ doc }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

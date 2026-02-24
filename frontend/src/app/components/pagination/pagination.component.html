@@ -1,0 +1,64 @@
+<div class="pagination-container" *ngIf="totalItems > 0">
+
+  <div class="pagination-info">
+    <span class="page-info">
+      Showing <strong>{{ startIndex }}</strong> - <strong>{{ endIndex }}</strong> 
+      of <strong>{{ totalItems }}</strong> tenders
+    </span>
+  </div>
+
+  <div class="pagination-controls">
+   
+    <button 
+      class="pagination-btn arrow-btn" 
+      (click)="goToFirstPage()"
+      [disabled]="isPreviousDisabled"
+      title="First Page">
+      &laquo;&laquo;
+    </button>
+
+    
+    <button 
+      class="pagination-btn arrow-btn" 
+      (click)="goToPreviousPage()"
+      [disabled]="isPreviousDisabled"
+      title="Previous Page">
+      &laquo;
+    </button>
+
+    
+    <button 
+      *ngFor="let page of pageNumbers" 
+      class="pagination-btn page-number"
+      [class.active]="page === currentPage"
+      (click)="onPageClick(page)"
+      [title]="'Page ' + page">
+      {{ page }}
+    </button>
+
+   
+    <button 
+      class="pagination-btn arrow-btn" 
+      (click)="goToNextPage()"
+      [disabled]="isNextDisabled"
+      title="Next Page">
+      &raquo;
+    </button>
+
+  
+    <button 
+      class="pagination-btn arrow-btn" 
+      (click)="goToLastPage()"
+      [disabled]="isNextDisabled"
+      title="Last Page">
+      &raquo;&raquo;
+    </button>
+  </div>
+</div>
+
+
+<div class="pagination-container" *ngIf="totalItems === 0">
+  <div class="pagination-info">
+    <span class="page-info">No tenders to display</span>
+  </div>
+</div>

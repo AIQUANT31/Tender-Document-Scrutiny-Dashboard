@@ -1,0 +1,191 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onCancel.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ title }}</h2>
+      <button class="close-btn" (click)="onCancel.emit()">×</button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="tender-form">
+      <div class="form-group">
+        <label for="title">Tender Title *</label>
+        <input
+          type="text"
+          id="title"
+          [(ngModel)]="formData.title"
+          name="title"
+          required
+          placeholder="Enter tender title">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea
+          id="description"
+          [(ngModel)]="formData.description"
+          name="description"
+          required
+          rows="4"
+          placeholder="Enter tender description"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="budget">Budget (₹) *</label>
+          <input
+            type="number"
+            id="budget"
+            [(ngModel)]="formData.budget"
+            name="budget"
+            required
+            placeholder="Enter budget">
+        </div>
+
+        <div class="form-group">
+          <label for="openingDate">Opening Date *</label>
+          <input
+            type="date"
+            id="openingDate"
+            [(ngModel)]="formData.openingDate"
+            name="openingDate"
+            required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="deadline">Deadline *</label>
+          <input
+            type="date"
+            id="deadline"
+            [(ngModel)]="formData.deadline"
+            name="deadline"
+            required
+            (ngModelChange)="onDeadlineChange()">
+          <div class="deadline-status" *ngIf="formData.deadline">
+            <!-- <span class="status-preview" [class]="getDeadlineStatus().toLowerCase()">
+              Status will be: {{ getDeadlineStatus() }}
+            </span> -->
+          </div>
+        </div>
+      </div>
+
+
+      
+      <div class="form-group">
+        <label for="userType">User Type *</label>
+        <select 
+          id="userType" 
+          [(ngModel)]="formData.userType" 
+          name="userType" 
+          required>
+          <option value="">Select user type</option>
+          <option value="Government">Government</option>
+          <option value="Private">Private</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Location </label>
+        <input
+          type="text"
+          id="location"
+          [(ngModel)]="formData.location"
+          name="location"
+        
+          placeholder="Enter location">
+      </div>
+
+      <div class="form-group">
+        <label for="contactNumber">Contact Number</label>
+        <input
+          type="tel"
+          id="contactNumber"
+          [(ngModel)]="formData.contactNumber"
+          name="contactNumber"
+          placeholder="Enter contact number">
+        
+          <label class="checkbox-label" style="margin-top: 8px;">
+          <input
+            type="checkbox"
+            [(ngModel)]="formData.isWhatsapp"
+            name="isWhatsapp">
+          This is WhatsApp number
+        </label>
+      </div>
+
+
+      <div class="form-group">
+        <label for="category">Category *</label>
+        <select 
+          id="category" 
+          [(ngModel)]="selectedCategory" 
+          (change)="onCategoryChange()"
+          name="category" 
+          required>
+          <option value="">Select category</option>
+          <option value="construction">Construction</option>
+          <option value="infrastructure">Infrastructure</option>
+          <option value="engineering">Engineering</option>
+          <option value="renovation">Renovation</option>
+          <option value="maintenance">Maintenance</option>
+          
+        </select>
+      </div>
+
+
+      <div class="form-group" *ngIf="isCategorySelected">
+        <label>Required Documents *</label>
+        <p class="category-hint">Based on your category selection, these documents are recommended:</p>
+        <div class="documents-container">
+          <div class="document-options">
+            <label class="checkbox-label" *ngFor="let doc of currentCategoryDocuments">
+              <input
+                type="checkbox"
+                [checked]="formData.requiredDocuments.includes(doc)"
+                (change)="toggleDocument(doc)">
+              {{ doc }}
+            </label>
+          </div>
+          <div class="custom-document">
+            <input
+              type="text"
+              [(ngModel)]="customDocument"
+              name="customDocument"
+              placeholder="Add custom document type">
+            <button type="button" class="btn-add-doc" (click)="addCustomDocument()">Add</button>
+          </div>
+          <div class="selected-documents" *ngIf="formData.requiredDocuments.length > 0">
+            <span class="selected-label">Selected:</span>
+            <span class="doc-tag" *ngFor="let doc of formData.requiredDocuments; let i = index">
+              {{ doc }}
+              <button type="button" class="remove-doc" (click)="removeDocument(i)">×</button>
+            </span>
+          </div>
+          <p class="error-message" *ngIf="formError && formData.requiredDocuments.length === 0">
+            Please select at least one required document
+          </p>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="!isCategorySelected">
+        <label>Required Documents *</label>
+        <p class="category-hint">Please select a category first to see recommended documents</p>
+        <div class="documents-container">
+          <div class="custom-document">
+            <input
+              type="text"
+              [(ngModel)]="customDocument"
+              name="customDocument"
+              placeholder="Add custom document type">
+            <button type="button" class="btn-add-doc" (click)="addCustomDocument()">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="onCancel.emit()">Cancel</button>
+        <button type="submit" class="btn-primary" [disabled]="!isValidForm()">Create Tender</button>
+      </div>
+    </form>
+  </div>
+</div>

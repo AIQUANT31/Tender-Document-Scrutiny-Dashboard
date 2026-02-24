@@ -1,0 +1,205 @@
+<div class="bids-overlay" *ngIf="tender">
+  <div class="bids-modal">
+
+    <div class="bids-header">
+      <div class="header-content">
+        <h2> Bids for Tender</h2>
+        <p class="tender-name">{{ tender.name }}</p>
+      </div>
+      <button class="close-btn" (click)="close()">×</button>
+    </div>
+
+   
+    <div class="stats-container">
+      <div class="stat-card total">
+        <span class="stat-number">{{ stats.totalBids }}</span>
+        <span class="stat-label">Total Bids</span>
+      </div>
+      <div class="stat-card pending">
+        <span class="stat-number">{{ stats.pendingBids }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat-card accepted">
+        <span class="stat-number">{{ stats.acceptedBids }}</span>
+        <span class="stat-label">Accepted</span>
+      </div>
+      <div class="stat-card rejected">
+        <span class="stat-number">{{ stats.rejectedBids }}</span>
+        <span class="stat-label">Rejected</span>
+      </div>
+    </div>
+
+
+    <div class="budget-info" *ngIf="tender.budget">
+      <span class="budget-label">Tender Budget:</span>
+      <span class="budget-value">{{ formatCurrency(tender.budget) }}</span>
+      <span class="bid-range" *ngIf="bids.length > 0">
+        | Lowest: {{ formatCurrency(getLowestBid()?.bidAmount || 0) }} | 
+        Highest: {{ formatCurrency(getHighestBid()?.bidAmount || 0) }}
+      </span>
+    </div>
+
+    <div class="loading-container" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading bids...</p>
+    </div>
+
+    
+    <div class="error-container" *ngIf="error && !loading">
+      <p class="error-message">{{ error }}</p>
+      <button class="retry-btn" (click)="loadBids()">Retry</button>
+    </div>
+
+    <div class="empty-container" *ngIf="!loading && !error && bids.length === 0">
+      <div class="empty-icon"></div>
+      <p class="empty-message">No bids received yet</p>
+      <p class="empty-submessage">Bidders haven't placed any bids on this tender yet.</p>
+    </div>
+
+    <div class="bids-list" *ngIf="!loading && !error && bids.length > 0">
+      <div class="bid-card" *ngFor="let bid of bids" (click)="viewBidDetails(bid); $event.stopPropagation()">
+        <div class="bid-header">
+          <div class="company-info">
+            <h3 class="company-name">{{ bid.bidderCompanyName }}</h3>
+            <span class="bidder-type">{{ bid.bidderType || 'Contractor' }}</span>
+          </div>
+          <div class="bid-amount">
+            <span class="amount">{{ formatCurrency(bid.bidAmount) }}</span>
+            <span class="status-badge" [ngClass]="getStatusClass(bid.status)">
+              {{ bid.status }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="bid-details">
+          <div class="detail-item">
+            <span class="detail-label">Contact:</span>
+            <span class="detail-value">{{ bid.bidderContactPerson || bid.bidderPhone || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Submitted:</span>
+            <span class="detail-value">{{ formatDate(bid.createdAt) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="hasDocuments(bid)">
+            <span class="detail-label">Documents:</span>
+            <span class="detail-value">{{ getDocumentPaths(bid).length }} file(s)</span>
+          </div>
+          <div class="detail-item winning" *ngIf="bid.isWinning">
+            <span class="winning-badge"> Winning Bid</span>
+          </div>
+        </div>
+
+        <div class="proposal-preview" *ngIf="bid.proposalText">
+          <p>{{ bid.proposalText | slice:0:150 }}{{ bid.proposalText.length > 150 ? '...' : '' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bid-detail-overlay" *ngIf="showBidDetail && selectedBid" (click)="closeBidDetail()">
+      <div class="bid-detail-modal" (click)="$event.stopPropagation()">
+        <div class="bid-detail-header">
+          <h2>Bid Details</h2>
+          <button class="close-btn" (click)="closeBidDetail()">×</button>
+        </div>
+
+        <div class="bid-detail-content">
+       
+          <div class="detail-section">
+            <h3>Bidder Information</h3>
+            <div class="detail-grid">
+              <div class="detail-row">
+                <span class="label">Company Name:</span>
+                <span class="value">{{ selectedBid.bidderCompanyName }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Email:</span>
+                <span class="value">{{ selectedBid.bidderEmail }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Phone:</span>
+                <span class="value">{{ selectedBid.bidderPhone || 'N/A' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Type:</span>
+                <span class="value">{{ selectedBid.bidderType || 'Contractor' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Contact Person:</span>
+                <span class="value">{{ selectedBid.bidderContactPerson || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+         
+          <div class="detail-section">
+            <h3> Bid Information</h3>
+            <div class="detail-grid">
+              <div class="detail-row highlight">
+                <span class="label">Bid Amount:</span>
+                <span class="value amount">{{ formatCurrency(selectedBid.bidAmount) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Status:</span>
+                <span class="value">
+                  <span class="status-badge" [ngClass]="getStatusClass(selectedBid.status)">
+                    {{ selectedBid.status }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Submitted On:</span>
+                <span class="value">{{ formatDate(selectedBid.createdAt) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Contact Number:</span>
+                <span class="value">{{ selectedBid.contactNumber || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="selectedBid.proposalText">
+            <h3> Proposal</h3>
+            <div class="proposal-text">
+              <p>{{ selectedBid.proposalText }}</p>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="hasDocuments(selectedBid)">
+            <h3>Documents ({{ getDocumentPaths(selectedBid).length }})</h3>
+            <div class="documents-list">
+              <div class="document-item" *ngFor="let docPath of getDocumentPaths(selectedBid); let i = index">
+                
+                <span class="document-name">{{ getFileName(docPath) }}</span>
+                <button class="download-btn" (click)="downloadDocument(selectedBid.bidId, docPath); $event.stopPropagation()">
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="detail-section" *ngIf="!hasDocuments(selectedBid)">
+            <h3> Documents</h3>
+            <p style="color: #666;">No documents uploaded for this bid.</p>
+          </div>
+        </div>
+
+        <div class="bid-detail-actions" *ngIf="tender.status === 'OPEN'">
+          <button 
+            class="action-btn accept" 
+            *ngIf="selectedBid.status === 'PENDING'"
+            (click)="acceptBid(selectedBid.bidId)">
+            Accept Bid
+          </button>
+          <button 
+            class="action-btn reject" 
+            *ngIf="selectedBid.status === 'PENDING' || selectedBid.status === 'ACCEPTED'"
+            (click)="rejectBid(selectedBid.bidId)">
+            Reject Bid
+          </button>
+          <button class="action-btn close-action" (click)="closeBidDetail()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

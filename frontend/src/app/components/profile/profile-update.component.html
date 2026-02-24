@@ -1,0 +1,67 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Update Profile</h2>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="loading-indicator" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Loading profile...</span>
+    </div>
+
+    <div class="alert alert-error" *ngIf="errorMessage && !loading" (click)="clearError()">
+      {{ errorMessage }}
+    </div>
+
+    <div class="alert alert-success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="profile-form" *ngIf="!loading || profileLoaded">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          [(ngModel)]="formData.username"
+          name="username"
+          required
+          placeholder="Enter username"
+          [disabled]="loading">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="formData.email"
+          name="email"
+          required
+          placeholder="Enter email"
+          [disabled]="loading">
+      </div>
+
+      <div class="form-group">
+        <label for="password">New Password (leave blank to keep current)</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="formData.password"
+          name="password"
+          placeholder="Enter new password"
+          [disabled]="loading">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="loading">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          {{ loading ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

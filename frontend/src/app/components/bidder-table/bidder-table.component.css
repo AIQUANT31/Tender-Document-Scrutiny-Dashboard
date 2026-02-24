@@ -1,0 +1,141 @@
+.bidder-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.bidder-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bidder-table thead {
+  background: #f8f9fa;
+}
+
+.bidder-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #eee;
+}
+
+.bidder-table tbody tr {
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.bidder-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.bidder-table td {
+  padding: 16px 20px;
+  font-size: 14px;
+  color: #1a2a3a;
+  border-bottom: 1px solid #eee;
+}
+
+.bidder-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.company-name {
+  font-weight: 600;
+  color: #1a2a3a;
+}
+
+.email {
+  color: #0066cc;
+}
+
+.phone {
+  color: #666;
+}
+
+.type {
+  color: #666;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.active {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.status-badge.inactive {
+  background: #fce8e6;
+  color: #c5221f;
+}
+
+.status-badge.pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.action-btn.view {
+  background: #0066cc;
+  color: white;
+}
+
+.action-btn.view:hover {
+  background: #0052a3;
+}
+
+.action-btn.edit {
+  background: #f5f7fa;
+  color: #1a2a3a;
+  border: 1px solid #ddd;
+}
+
+.action-btn.edit:hover {
+  background: #e9ecef;
+}
+
+.action-btn.delete {
+  background: #dc3545;
+  color: white;
+}
+
+.action-btn.delete:hover {
+  background: #c82333;
+}
+
+@media (max-width: 1024px) {
+  .bidder-table-container {
+    overflow-x: auto;
+  }
+
+  .bidder-table {
+    min-width: 900px;
+  }
+}

@@ -1,0 +1,7 @@
+<div class="bidder-header">
+  <h1>Bidder Management</h1>
+  <button class="add-btn" (click)="onAddBidder()" *ngIf="bidders.length === 0">+ Add New Bidder</button>
+  <div class="single-bidder-info" *ngIf="bidders.length > 0">
+    <span>You have a bidder profile</span>
+  </div>
+</div>

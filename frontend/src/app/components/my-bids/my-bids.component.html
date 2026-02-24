@@ -1,0 +1,60 @@
+
+<div class="my-bids-section">
+  <div class="section-header">
+    <h2>My Bids - Tenders I Have Bid On</h2>
+    <button class="toggle-btn" (click)="onToggle()">
+      {{ showMyBids ? 'Hide' : 'Show' }}
+    </button>
+  </div>
+
+  <div class="my-bids-content" *ngIf="showMyBids">
+    <div class="loading" *ngIf="loadingMyBids">
+      Loading your bids...
+    </div>
+
+    <div class="empty-state" *ngIf="!loadingMyBids && myBids.length === 0">
+      <p>You haven't placed any bids yet.</p>
+      <a href="/tender" class="btn btn-primary">Browse Tenders</a>
+    </div>
+
+    <div class="bids-list" *ngIf="!loadingMyBids && myBids.length > 0">
+      <div class="bid-card" *ngFor="let bid of myBids">
+        <div class="bid-header">
+          <h3 class="tender-name">{{ bid.tenderName }}</h3>
+          <span class="status-badge" [class]="bid.status.toLowerCase()">{{ bid.status }}</span>
+        </div>
+        <div class="bid-details">
+          <div class="detail-row">
+            <span class="label">Budget:</span>
+            <span class="value">₹{{ bid.tenderBudget | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">My Bid:</span>
+            <span class="value bid-amount">₹{{ bid.bidAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Deadline:</span>
+            <span class="value">{{ bid.tenderDeadline ? (bid.tenderDeadline | date:'mediumDate') : 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Location:</span>
+            <span class="value">{{ bid.tenderLocation || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Submitted:</span>
+            <span class="value">{{ bid.createdAt | date:'medium' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="bid.hasDocument">
+            <span class="label">Document:</span>
+            <span class="value">Uploaded</span>
+          </div>
+        </div>
+        <!-- <div class="tender-status">
+          <span class="tender-status-badge" [class]="bid.tenderStatus.toLowerCase()">
+            Tender {{ bid.tenderStatus }}
+          </span>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</div>

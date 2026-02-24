@@ -1,0 +1,93 @@
+<div class="tender-container">
+  <app-nav></app-nav>
+  
+  <main class="tender-content">
+    <div class="tender-header">
+      <h1>Tender Management</h1>
+      <div class="header-actions">
+        <button class="create-btn" (click)="createTender()"> + Create New Tender</button>
+      </div>
+    </div>
+
+    <div class="tender-filters">
+      <input type="text" placeholder="Search tenders..." class="search-input" [(ngModel)]="searchTerm" (ngModelChange)="onSearchOrFilterChange()">
+      <select class="status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onSearchOrFilterChange()">
+        <option value="">All Status</option>
+        <option value="OPEN">Open</option>
+        <option value="CLOSED">Closed</option>
+       
+      </select>
+    </div>
+
+    <div class="tender-stats">
+      <div class="stat-card">
+        <span class="stat-number">{{ getTotalTenders() }}</span>
+        <span class="stat-label">Total Tenders</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">{{ getOpenTenders() }}</span>
+        <span class="stat-label">Open Tenders</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">{{ getClosedTenders() }}</span>
+        <span class="stat-label">Closed Tenders</span>
+      </div>
+    </div>
+
+    <div class="loading" *ngIf="loading">
+      Loading tenders...
+    </div>
+
+    <div class="tender-list" *ngIf="!loading && filteredTenders.length > 0; else noTenders">
+      <div class="tender-card" *ngFor="let tender of paginatedTenders">
+        <div class="tender-card-header" (click)="viewDetails(tender.id)">
+          <h3>{{ tender.name }}</h3>
+          <div class="tender-badges">
+            <span class="user-type-badge" *ngIf="tender.userType" [ngClass]="tender.userType.toLowerCase()">{{ tender.userType }}</span>
+            <span class="status-badge" [class]="getTenderStatus(tender).toLowerCase()">{{ getTenderStatus(tender) }}</span>
+          </div>
+        </div>
+        <div class="tender-card-body">
+          <p class="description">{{ tender.description }}</p>
+          <div class="tender-meta">
+            <span class="budget">₹{{ tender.budget | number:'1.2-2' }}</span>
+            <span class="date">{{ tender.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="tender-actions" *ngIf="userId && tender.createdBy === userId">
+            <button class="delete-btn" (click)="confirmDelete(tender.id); $event.stopPropagation()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noTenders>
+      <div class="empty-state">
+        <p>No tenders available. Click "Create New Tender" to add one.</p>
+      </div>
+    </ng-template>
+    
+    <!-- Pagination Component -->
+    <app-pagination 
+      [totalItems]="filteredTenders.length" 
+      [itemsPerPage]="itemsPerPage" 
+      [currentPage]="currentPage"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
+  </main>
+
+  
+  <app-tender-form 
+    [isOpen]="showTenderForm"
+    title="Create New Tender"
+    (onSubmitForm)="onTenderSubmit($event)"
+    (onCancel)="onTenderCancel()">
+  </app-tender-form>
+
+  <app-tender-detail
+    *ngIf="showTenderDetail"
+    [tender]="selectedTender"
+    [currentUserId]="userId"
+    (onClose)="closeTenderDetail()"
+    (onDelete)="onDeleteTender($event)">
+  </app-tender-detail>
+</div>

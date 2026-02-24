@@ -1,0 +1,23 @@
+# Backend - ignore compiled classes and build artifacts
+Backend/target/
+Backend/*.class
+
+# Frontend - ignore node_modules, Angular build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files (sensitive)
+.env
