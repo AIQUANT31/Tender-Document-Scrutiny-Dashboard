@@ -22,6 +22,9 @@ public interface TenderRepository extends JpaRepository<Tender, Long> {
     @Query("SELECT t FROM Tender t ORDER BY t.createdAt DESC")
     List<Tender> findRecentTenders(Pageable pageable);
     
+    @Query("SELECT t FROM Tender t ORDER BY t.createdAt DESC")
+    List<Tender> findAllTendersSorted();
+    
     @Query("SELECT t.status, COUNT(t) FROM Tender t GROUP BY t.status")
     List<Object[]> countByStatusGrouped();
     

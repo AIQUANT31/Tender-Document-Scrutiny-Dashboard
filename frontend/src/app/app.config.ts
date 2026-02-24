@@ -30,7 +30,7 @@ class NoReuseRouteStrategy implements RouteReuseStrategy {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withFetch()),
     { provide: RouteReuseStrategy, useClass: NoReuseRouteStrategy }
   ]

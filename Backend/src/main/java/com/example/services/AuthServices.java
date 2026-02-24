@@ -4,6 +4,8 @@ import com.example.dto.LoginRequest;
 import com.example.dto.SignupRequest;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
+import com.example.security.CustomUserDetails;
+import com.example.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class AuthServices {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     public Map<String, Object> signup(SignupRequest signupRequest) {
         Map<String, Object> response = new HashMap<>();
@@ -73,8 +78,13 @@ public class AuthServices {
             return response;
         }
 
+        // Generate JWT token
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        String token = jwtTokenProvider.generateToken(userDetails);
+
         response.put("success", true);
         response.put("message", "Login successful");
+        response.put("token", token);
         response.put("user", Map.of(
             "id", user.getId(),
             "username", user.getUsername(),

@@ -12,291 +12,753 @@ import java.util.regex.Pattern;
 public class KeywordMatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(KeywordMatcher.class);
-    
-    private static final Pattern PAN_CARD_PATTERN = Pattern.compile(
-        "\\b[A-Z]{5}[0-9]{4}[A-Z]\\b"
-    );
-    
-    private static final Pattern AADHAR_CARD_PATTERN = Pattern.compile(
-        "\\b\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}\\b"
+
+    // PAN Pattern → 5 letters + 4 digits + 1 letter
+    private static final Pattern PAN_PATTERN = Pattern.compile(
+            "\\b[A-Z]{5}[0-9]{4}[A-Z]\\b",
+            Pattern.CASE_INSENSITIVE
     );
 
+    //  Aadhaar Pattern → 12 digits
+    private static final Pattern AADHAAR_PATTERN = Pattern.compile(
+            "\\b\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}\\b"
+    );
+
+    //  GSTIN Pattern → 15 characters
+    private static final Pattern GSTIN_PATTERN = Pattern.compile(
+            "\\b\\d{2}[A-Z]{5}\\d{4}[A-Z][A-Z0-9][A-Z]\\d\\b"
+    );
+
+    // CIN Pattern (Company Identification Number) → e.g. U12345DL2010PLC123456
+    private static final Pattern CIN_PATTERN = Pattern.compile(
+            "\\b[LU]\\d{5}[A-Z]{2}\\d{4}[A-Z]{3}\\d{6}\\b",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    // Date patterns for various documents
+    private static final Pattern DATE_PATTERN = Pattern.compile(
+            "\\b\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{2,4}\\b"
+    );
+    
+    // Name pattern (capitalized words)
+    private static final Pattern NAME_PATTERN = Pattern.compile(
+            "\\b[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)+\\b"
+    );
+
+    //  Document keywords
     private static final Map<String, List<String>> DOCUMENT_KEYWORDS = new HashMap<>();
 
+    // Document-specific required fields - defines what fields MUST be present for each document type
+    private static final Map<String, DocumentTemplate> DOCUMENT_TEMPLATES = new HashMap<>();
+
     static {
-        DOCUMENT_KEYWORDS.put("AADHAR", Arrays.asList("aadhar", "aadhaar", "uidai", "uid", "aadhar card", "aadhaar card", "unique identification", "uid number"));
-        DOCUMENT_KEYWORDS.put("PAN", Arrays.asList("pan", "permanent account", "income tax", "pan card", "pan number"));
-        DOCUMENT_KEYWORDS.put("GST", Arrays.asList("gst", "goods and services", "gstin", "tax registration"));
-        DOCUMENT_KEYWORDS.put("TENDER", Arrays.asList("tender", "bid document", "proposal"));
-        DOCUMENT_KEYWORDS.put("COMPANY_REGISTRATION", Arrays.asList("company registration", "moa", "aoa", "incorporation"));
-        DOCUMENT_KEYWORDS.put("POWER_OF_ATTORNEY", Arrays.asList("power of attorney", "poa", "authorization"));
-        DOCUMENT_KEYWORDS.put("BANK_STATEMENT", Arrays.asList("bank statement", "bank account"));
-        DOCUMENT_KEYWORDS.put("AUDITED_FINANCIALS", Arrays.asList("audited", "financial statements", "balance sheet"));
-        DOCUMENT_KEYWORDS.put("WORK_EXPERIENCE", Arrays.asList("work experience", "completed projects"));
-        DOCUMENT_KEYWORDS.put("TECHNICAL_CAPABILITY", Arrays.asList("technical", "capability statement"));
-        DOCUMENT_KEYWORDS.put("QUALITY_CERTIFICATE", Arrays.asList("quality", "iso", "certification"));
-        DOCUMENT_KEYWORDS.put("EMD", Arrays.asList("emd", "earnest money", "security deposit", "bid security"));
-        DOCUMENT_KEYWORDS.put("TENDER_FEE", Arrays.asList("tender fee", "document fee"));
-        DOCUMENT_KEYWORDS.put("AFFIDAVIT", Arrays.asList("affidavit", "declaration", "undertaking"));
-        DOCUMENT_KEYWORDS.put("NATIONALITY", Arrays.asList("nationality", "citizenship"));
-        DOCUMENT_KEYWORDS.put("REGISTRATION", Arrays.asList("registration", "license", "permit"));
-    }
-    public List<String> getKeywordsForDocumentType(String documentType) {
-        return DOCUMENT_KEYWORDS.getOrDefault(documentType.toUpperCase(), new ArrayList<>());
+        // Basic keywords
+        DOCUMENT_KEYWORDS.put("PAN", Arrays.asList(
+                "pan", "pan card", "permanent account number",
+                "permanentaccountnumber", "income tax department",
+                "panno", "pan no", "pan number"
+        ));
+
+        DOCUMENT_KEYWORDS.put("AADHAAR", Arrays.asList(
+                "aadhaar", "aadhar", "uidai", "uid number",
+                "unique identification", "aadhar card", "aadhaar number"
+        ));
+
+        DOCUMENT_KEYWORDS.put("GST", Arrays.asList(
+                "gst", "gstin", "gst registration", "goods and services tax",
+                "gstn", "gst certificate", "gst number"
+        ));
+
+        DOCUMENT_KEYWORDS.put("INCOME_TAX", Arrays.asList(
+                "income tax", "income tax clearance", "tax clearance", "itr",
+                "income tax return", "itr filing", "tax assessment"
+        ));
+
+        DOCUMENT_KEYWORDS.put("EXPERIENCE", Arrays.asList(
+                "experience certificate", "work experience", "experience letter",
+                "employment certificate", "service certificate", "work history"
+        ));
+
+        DOCUMENT_KEYWORDS.put("COMPANY_REG", Arrays.asList(
+                "company registration", "certificate of incorporation", "roc",
+                "incorporation certificate", "company incorporation",
+                "ministry of corporate affairs", "mca",
+                "corporate identification number", "cin",
+                "memorandum of association", "articles of association",
+                "moa", "aoa"
+        ));
+
+        DOCUMENT_KEYWORDS.put("INSURANCE", Arrays.asList(
+                "insurance", "insurance certificate", "insurance policy",
+                "insurance cover", "policy document", "coverage certificate"
+        ));
+
+        // Initialize document templates with required fields
+        initDocumentTemplates();
     }
 
-    public List<String> getSupportedDocumentTypes() {
-        return new ArrayList<>(DOCUMENT_KEYWORDS.keySet());
+    /**
+     * Initialize document templates defining required fields for each document type
+     */
+    private static void initDocumentTemplates() {
+        // PAN Card Template - requires specific fields
+        DocumentTemplate panTemplate = new DocumentTemplate("PAN");
+        panTemplate.addRequiredField("documentNumber", Arrays.asList(
+                "pan", "permanent account number", "panno", "pan no"
+        ));
+        panTemplate.addRequiredField("name", Arrays.asList(
+                "name", "name of", "holder name", "card holder"
+        ));
+        panTemplate.addRequiredField("fatherName", Arrays.asList(
+                "father", "father's name", "father name", "parent"
+        ));
+        panTemplate.addRequiredField("dateOfBirth", Arrays.asList(
+                "dob", "date of birth", "birth date", "birthday"
+        ));
+        panTemplate.addRequiredField("signature", Arrays.asList(
+                "signature", "signed", "sign"
+        ));
+        panTemplate.setNumberPattern("[A-Z]{5}[0-9]{4}[A-Z]");
+        DOCUMENT_TEMPLATES.put("PAN", panTemplate);
+
+        // Aadhaar Card Template
+        DocumentTemplate aadhaarTemplate = new DocumentTemplate("AADHAAR");
+        aadhaarTemplate.addRequiredField("documentNumber", Arrays.asList(
+                "aadhaar", "uid", "unique identification", "aadhar number"
+        ));
+        aadhaarTemplate.addRequiredField("name", Arrays.asList(
+                "name", "name of", "holder name"
+        ));
+        aadhaarTemplate.addRequiredField("dateOfBirth", Arrays.asList(
+                "dob", "date of birth", "birth date", "birthday", "year of birth"
+        ));
+        aadhaarTemplate.addRequiredField("gender", Arrays.asList(
+                "gender", "sex", "male", "female"
+        ));
+        aadhaarTemplate.addRequiredField("address", Arrays.asList(
+                "address", "residence", "village", "city", "district", "state"
+        ));
+        aadhaarTemplate.setNumberPattern("\\d{12}");
+        DOCUMENT_TEMPLATES.put("AADHAAR", aadhaarTemplate);
+
+        // GST Certificate Template
+        DocumentTemplate gstTemplate = new DocumentTemplate("GST");
+        gstTemplate.addRequiredField("documentNumber", Arrays.asList(
+                "gstin", "gst registration", "gst number", "registration number"
+        ));
+        gstTemplate.addRequiredField("businessName", Arrays.asList(
+                "legal name", "business name", "trade name", "company name", "firm name"
+        ));
+        gstTemplate.addRequiredField("address", Arrays.asList(
+                "address", "principal place", "business address", "registered address"
+        ));
+        gstTemplate.addRequiredField("state", Arrays.asList(
+                "state", "state code", "state name"
+        ));
+        gstTemplate.setNumberPattern("\\d{2}[A-Z]{5}\\d{4}[A-Z][A-Z0-9][A-Z]\\d");
+        DOCUMENT_TEMPLATES.put("GST", gstTemplate);
+
+        // Income Tax Return Template
+        DocumentTemplate itrTemplate = new DocumentTemplate("INCOME_TAX");
+        itrTemplate.addRequiredField("documentType", Arrays.asList(
+                "itr", "income tax return", "return of income", "tax return"
+        ));
+        itrTemplate.addRequiredField("assessmentYear", Arrays.asList(
+                "assessment year", "ay", "financial year", "fy"
+        ));
+        itrTemplate.addRequiredField("name", Arrays.asList(
+                "name", "assessee name", "taxpayer name"
+        ));
+        itrTemplate.addRequiredField("income", Arrays.asList(
+                "income", "total income", "gross income", "taxable income"
+        ));
+        itrTemplate.addRequiredField("tax", Arrays.asList(
+                "tax", "tax payable", "tax deducted", "tds"
+        ));
+        DOCUMENT_TEMPLATES.put("INCOME_TAX", itrTemplate);
+
+        // Experience Certificate Template
+        DocumentTemplate expTemplate = new DocumentTemplate("EXPERIENCE");
+        expTemplate.addRequiredField("employeeName", Arrays.asList(
+                "employee name", "name of employee", "candidate name",
+                "this is to certify", "to certify that", "certify that",
+                "mr.", "mrs.", "ms.", "shri", "smt"
+        ));
+        expTemplate.addRequiredField("companyName", Arrays.asList(
+                "company name", "organization", "employer", "institution", "company"
+        ));
+        expTemplate.addRequiredField("designation", Arrays.asList(
+                "designation", "position", "job title", "role", "post",
+                "worked as", "employed as"
+        ));
+        expTemplate.addRequiredField("duration", Arrays.asList(
+                "duration", "period", "from date", "to date", "working period",
+                "years", "months", "joining date", "relieving date",
+                "from", "to", "since", "till", "tenure"
+        ));
+        expTemplate.addRequiredField("certificateType", Arrays.asList(
+                "experience", "experience certificate", "work experience", "service certificate",
+                "employment certificate", "letter of experience", "experience letter"
+        ));
+        DOCUMENT_TEMPLATES.put("EXPERIENCE", expTemplate);
+
+        // Company Registration Template
+        DocumentTemplate companyTemplate = new DocumentTemplate("COMPANY_REG");
+        companyTemplate.addRequiredField("companyName", Arrays.asList(
+                "company name", "name of company", "corporate name"
+        ));
+        companyTemplate.addRequiredField("registrationNumber", Arrays.asList(
+                "cin", "company identification number", "registration number",
+                "incorporation number", "roc"
+        ));
+        companyTemplate.addRequiredField("dateOfIncorporation", Arrays.asList(
+                "date of incorporation", "incorporated on", "incorporation date",
+                "formation date"
+        ));
+        companyTemplate.addRequiredField("registeredAddress", Arrays.asList(
+                "registered office", "registered address", "principal place"
+        ));
+        companyTemplate.addRequiredField("capital", Arrays.asList(
+                "authorized capital", "paid up capital", "share capital"
+        ));
+        DOCUMENT_TEMPLATES.put("COMPANY_REG", companyTemplate);
+
+        // Insurance Certificate Template
+        DocumentTemplate insuranceTemplate = new DocumentTemplate("INSURANCE");
+        insuranceTemplate.addRequiredField("policyNumber", Arrays.asList(
+                "policy number", "policy no", "policy id", "certificate number"
+        ));
+        insuranceTemplate.addRequiredField("insuredName", Arrays.asList(
+                "insured name", "proposer name", "policy holder", "beneficiary"
+        ));
+        insuranceTemplate.addRequiredField("insuranceCompany", Arrays.asList(
+                "insurance company", "insurer", "company name", "issued by"
+        ));
+        insuranceTemplate.addRequiredField("validity", Arrays.asList(
+                "validity", "valid from", "valid until", "expiry date", "policy period",
+                "start date", "end date", "coverage"
+        ));
+        insuranceTemplate.addRequiredField("sumInsured", Arrays.asList(
+                "sum insured", "coverage amount", "sum assured", "limit"
+        ));
+        DOCUMENT_TEMPLATES.put("INSURANCE", insuranceTemplate);
     }
 
-    private List<String> getKeywordsInternal(String documentType) {
-        String docTypeLower = documentType.toLowerCase().trim();
-        
-        for (Map.Entry<String, List<String>> entry : DOCUMENT_KEYWORDS.entrySet()) {
-            if (entry.getKey().toLowerCase().equals(docTypeLower)) {
-                logger.debug("Found exact match for '{}' in DOCUMENT_KEYWORDS", documentType);
-                return entry.getValue();
-            }
-        }
-        
-       
-        for (Map.Entry<String, List<String>> entry : DOCUMENT_KEYWORDS.entrySet()) {
-            String key = entry.getKey().toLowerCase();
-            
-            if (docTypeLower.contains(key) || key.contains(docTypeLower) ||
-                (key.equals("pan") && (docTypeLower.contains("pan") || docTypeLower.contains("pan card"))) ||
-                (key.equals("aadhar") && (docTypeLower.contains("aadhar") || docTypeLower.contains("aadhaar"))) ||
-                (key.equals("gst") && docTypeLower.contains("gst"))) {
-                logger.debug("Found partial match: '{}' matches key '{}'", documentType, entry.getKey());
-                return entry.getValue();
-            }
-        }
-        
-        // Special case: check for common document names
-        if (docTypeLower.contains("pan") || docTypeLower.contains("income tax")) {
-            logger.debug("Special case: '{}' matched to PAN keywords", documentType);
-            return DOCUMENT_KEYWORDS.get("PAN");
-        }
-        
-        if (docTypeLower.contains("aadhar") || docTypeLower.contains("aadhaar") || docTypeLower.contains("uid")) {
-            logger.debug("Special case: '{}' matched to AADHAR keywords", documentType);
-            return DOCUMENT_KEYWORDS.get("AADHAR");
-        }
-        
-        if (docTypeLower.contains("gst")) {
-            logger.debug("Special case: '{}' matched to GST keywords", documentType);
-            return DOCUMENT_KEYWORDS.get("GST");
-        }
-        
-        logger.debug("No keywords found for '{}'", documentType);
+    //  Get keywords
+    public List<String> getKeywordsForDocument(String documentName) {
+        if (documentName == null) return new ArrayList<>();
+
+        String docLower = documentName.toLowerCase();
+
+        // IMPORTANT: avoid matching "comPANY" as "PAN"
+        if (containsWord(docLower, "pan")) return DOCUMENT_KEYWORDS.get("PAN");
+        if (docLower.contains("aadhaar") || docLower.contains("aadhar") || docLower.contains("uid")) return DOCUMENT_KEYWORDS.get("AADHAAR");
+        if (docLower.contains("gst") || docLower.contains("gstin")) return DOCUMENT_KEYWORDS.get("GST");
+        if (docLower.contains("income tax") || docLower.contains("itr") || docLower.contains("tax")) return DOCUMENT_KEYWORDS.get("INCOME_TAX");
+        if (docLower.contains("experience")) return DOCUMENT_KEYWORDS.get("EXPERIENCE");
+        if (docLower.contains("company") || docLower.contains("incorporation") || docLower.contains("roc")) return DOCUMENT_KEYWORDS.get("COMPANY_REG");
+        if (docLower.contains("insurance")) return DOCUMENT_KEYWORDS.get("INSURANCE");
+
         return new ArrayList<>();
     }
 
-    public List<String> getKeywordsForDocument(String documentName) {
-        List<String> keywords = new ArrayList<>();
-        String docNameLower = documentName.toLowerCase().trim();
+    /**
+     * Get document template for validation
+     */
+    public DocumentTemplate getDocumentTemplate(String documentName) {
+        if (documentName == null) return null;
         
-        // First try to get predefined keywords from DOCUMENT_KEYWORDS map
-        List<String> predefined = getKeywordsInternal(docNameLower);
-        if (predefined != null && !predefined.isEmpty()) {
-            keywords.addAll(predefined);
-            logger.debug("Added {} predefined keywords for '{}': {}", predefined.size(), documentName, predefined);
-        }
+        String docLower = documentName.toLowerCase();
         
-        // ALWAYS add the full document name as a keyword (critical for matching)
-        if (!docNameLower.isEmpty() && !keywords.contains(docNameLower)) {
-            keywords.add(docNameLower);
-        }
+        if (containsWord(docLower, "pan")) return DOCUMENT_TEMPLATES.get("PAN");
+        if (docLower.contains("aadhaar") || docLower.contains("aadhar") || docLower.contains("uid")) return DOCUMENT_TEMPLATES.get("AADHAAR");
+        if (docLower.contains("gst") || docLower.contains("gstin")) return DOCUMENT_TEMPLATES.get("GST");
+        if (docLower.contains("income tax") || docLower.contains("itr") || docLower.contains("tax")) return DOCUMENT_TEMPLATES.get("INCOME_TAX");
+        if (docLower.contains("experience")) return DOCUMENT_TEMPLATES.get("EXPERIENCE");
+        if (docLower.contains("company") || docLower.contains("incorporation") || docLower.contains("roc")) return DOCUMENT_TEMPLATES.get("COMPANY_REG");
+        if (docLower.contains("insurance")) return DOCUMENT_TEMPLATES.get("INSURANCE");
         
-        // Add individual words from the document name (for flexible matching)
-        String[] words = docNameLower.split("[\\s,_-]+");
-        for (String word : words) {
-            word = word.trim();
-            if (word.length() >= 2 && !keywords.contains(word)) {
-                keywords.add(word);
-            }
-        }
-        
-        // Add keywords from DOCUMENT_KEYWORDS that match
-        for (Map.Entry<String, List<String>> entry : DOCUMENT_KEYWORDS.entrySet()) {
-            String docType = entry.getKey().toLowerCase();
-            if (docNameLower.contains(docType) || docType.contains(docNameLower)) {
-                List<String> typeKeywords = entry.getValue();
-                for (String typeKw : typeKeywords) {
-                    if (!keywords.contains(typeKw.toLowerCase())) {
-                        keywords.add(typeKw.toLowerCase());
-                    }
-                }
-            }
-        }
-        
-        // Remove duplicates while preserving order
-        List<String> uniqueKeywords = new ArrayList<>();
-        for (String kw : keywords) {
-            String kwLower = kw.toLowerCase().trim();
-            if (!kwLower.isEmpty() && !uniqueKeywords.contains(kwLower)) {
-                uniqueKeywords.add(kwLower);
-            }
-        }
-        
-        logger.info("Final keywords for '{}': {}", documentName, uniqueKeywords);
-        return uniqueKeywords;
+        return null;
     }
 
-  
-    public boolean checkContentMatch(String requiredDoc, List<String> keywords, String fileName, String content) {
-        if (matchesRequiredDocument(requiredDoc, fileName)) return true;
-        if (content == null || content.isEmpty()) return false;
+    private boolean containsWord(String text, String word) {
+        if (text == null || word == null || word.isBlank()) return false;
+        return Pattern.compile("\\b" + Pattern.quote(word) + "\\b", Pattern.CASE_INSENSITIVE)
+                .matcher(text)
+                .find();
+    }
+
+    /**
+     * Comprehensive document validation with field-level checking
+     * Returns a map containing validation results for each required field
+     */
+    public DocumentValidationResult validateDocumentComprehensively(String documentType, String content) {
+        DocumentValidationResult result = new DocumentValidationResult();
+        result.setValid(false);
+        
+        if (content == null || content.isBlank()) {
+            result.setErrorMessage("No content to validate");
+            return result;
+        }
+
+        String contentLower = content.toLowerCase();
+        
+        // Get the appropriate template
+        DocumentTemplate template = getDocumentTemplate(documentType);
+        if (template == null) {
+            // Fallback to basic validation if no template found
+            return basicValidation(documentType, content);
+        }
+        
+        result.setDocumentType(template.getDocumentType());
+        
+        // Validate document number pattern first
+        if (template.getNumberPattern() != null) {
+            Pattern pattern = Pattern.compile(template.getNumberPattern(), Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(content);
+            if (matcher.find()) {
+                result.setDocumentNumber(matcher.group());
+                result.getValidatedFields().add("documentNumber");
+                logger.info("Document number validated: {}", result.getDocumentNumber());
+            }
+        }
+        
+        // Validate each required field
+        int fieldsFound = 0;
+        int totalFields = template.getRequiredFields().size();
+        
+        for (Map.Entry<String, List<String>> fieldEntry : template.getRequiredFields().entrySet()) {
+            String fieldName = fieldEntry.getKey();
+            List<String> fieldKeywords = fieldEntry.getValue();
+            
+            // Skip documentNumber as it's validated separately with pattern
+            if (fieldName.equals("documentNumber")) continue;
+            
+            boolean fieldFound = false;
+            for (String keyword : fieldKeywords) {
+                if (contentLower.contains(keyword.toLowerCase())) {
+                    fieldFound = true;
+                    break;
+                }
+            }
+            
+            if (fieldFound) {
+                result.getValidatedFields().add(fieldName);
+                fieldsFound++;
+                logger.debug("Field '{}' found in document", fieldName);
+            } else {
+                result.getMissingFields().add(fieldName);
+                logger.debug("Field '{}' NOT found in document", fieldName);
+            }
+        }
+        
+        // Calculate validation score
+        int requiredFieldsWithNumber = totalFields + (template.getNumberPattern() != null ? 1 : 0);
+        int fieldsValidatedWithNumber = fieldsFound + (result.getDocumentNumber() != null ? 1 : 0);
+        
+        double score = (double) fieldsValidatedWithNumber / requiredFieldsWithNumber * 100;
+        result.setValidationScore(score);
+        
+        // Document is valid if at least 60% of fields are present OR document number + at least 1 field
+        if (score >= 60 || (result.getDocumentNumber() != null && fieldsFound >= 1)) {
+            result.setValid(true);
+            result.setMessage("Document validated successfully");
+        } else {
+            result.setValid(false);
+            result.setErrorMessage("Document does not contain expected content. Missing: " + 
+                    String.join(", ", result.getMissingFields()));
+        }
+        
+        return result;
+    }
+
+    /**
+     * Fallback basic validation
+     */
+    private DocumentValidationResult basicValidation(String documentType, String content) {
+        DocumentValidationResult result = new DocumentValidationResult();
+        result.setDocumentType(documentType);
+        
+        List<String> keywords = getKeywordsForDocument(documentType);
+        
+        if (keywords.isEmpty()) {
+            result.setValid(content.length() > 10); // Basic length check
+            return result;
+        }
         
         int matches = 0;
+        String contentLower = content.toLowerCase();
+        
         for (String keyword : keywords) {
-            if (content.contains(keyword.toLowerCase())) matches++;
-        }
-        
-        return matches >= 2;
-    }
-
-  
-    public boolean matchesRequiredDocument(String requiredDoc, String fileName) {
-        if (fileName.contains(requiredDoc)) return true;
-        
-        for (Map.Entry<String, List<String>> entry : DOCUMENT_KEYWORDS.entrySet()) {
-            String docType = entry.getKey().toLowerCase();
-            List<String> keywords = entry.getValue();
-            
-            if (requiredDoc.contains(docType) || docType.contains(requiredDoc)) {
-                for (String kw : keywords) {
-                    if (fileName.contains(kw)) return true;
-                }
-            }
-            
-            for (String kw : keywords) {
-                if (requiredDoc.contains(kw) && fileName.contains(kw)) return true;
+            if (contentLower.contains(keyword.toLowerCase())) {
+                matches++;
             }
         }
         
-        String[] words = requiredDoc.split("[\\s,_-]+");
-        for (String word : words) {
-            if (word.length() > 3 && fileName.contains(word)) return true;
-        }
+        result.setValid(matches >= 2);
+        result.setValidationScore(matches * 100.0 / keywords.size());
         
-        return false;
+        return result;
     }
 
     public String validatePanCardInContent(String content) {
-        if (content == null || content.isEmpty()) {
-            return null;
-        }
-        
-       
-        Matcher matcher = PAN_CARD_PATTERN.matcher(content);
-        if (matcher.find()) {
-            String panNumber = matcher.group();
-            logger.info("Found valid PAN card number: {}", panNumber);
-            return panNumber;
-        }
-        
-     
-        String[] panPatterns = {
-            "pan\\s*[:|=]\\s*([A-Z]{5}[0-9]{4}[A-Z])",
-            "panno\\s*[:|=]\\s*([A-Z]{5}[0-9]{4}[A-Z])",
-            "pan\\s*number\\s*[:|=]\\s*([A-Z]{5}[0-9]{4}[A-Z])",
-            "permanent\\s*account\\s*number\\s*[:|=]\\s*([A-Z]{5}[0-9]{4}[A-Z])"
-        };
-        
-        for (String pattern : panPatterns) {
-            Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-            Matcher m = p.matcher(content);
-            if (m.find()) {
-                String panNumber = m.group(1);
-                logger.info("Found PAN card number with pattern: {}", panNumber);
-                return panNumber;
-            }
-        }
-        
-   
-        String contentLower = content.toLowerCase();
-        boolean hasPanKeyword = false;
-        List<String> panKeywords = DOCUMENT_KEYWORDS.get("PAN");
-        for (String keyword : panKeywords) {
-            if (contentLower.contains(keyword)) {
-                hasPanKeyword = true;
-                logger.info("Found PAN keyword: {}", keyword);
+
+    if (content == null || content.isBlank())
+        return null;
+
+    logger.info("Validating PAN in content of length: {}", content.length());
+
+    String contentLower = content.toLowerCase();
+
+    // Strong PAN context keywords to reduce false-positives.
+    // PAN number can appear in other documents (GST, ITR, etc.), so we don't accept the number alone.
+    List<String> strongPanContext = Arrays.asList(
+            "income tax department",
+            "income tax",
+            "permanent account number",
+            "pan card"
+    );
+
+    //  Normalize OCR text - remove special characters but keep letters and numbers
+    String normalized = content
+            .replaceAll("[^A-Za-z0-9]", "")   // remove spaces, :, -, etc.
+            .toUpperCase();
+
+    logger.debug("Normalized content: {}", normalized.substring(0, Math.min(100, normalized.length())));
+
+    // Try to find PAN pattern: 5 letters + 4 digits + 1 letter
+    Pattern panPattern = Pattern.compile("[A-Z]{5}[0-9]{4}[A-Z]");
+    Matcher matcher = panPattern.matcher(normalized);
+
+    if (matcher.find()) {
+        String pan = matcher.group();
+        // Require context to avoid validating PAN from unrelated documents.
+        boolean hasStrongContext = false;
+        for (String ctx : strongPanContext) {
+            if (contentLower.contains(ctx)) {
+                hasStrongContext = true;
                 break;
             }
         }
-        
-        if (hasPanKeyword) {
-            // Keywords found - try one more time with more flexible pattern
-            Pattern flexiblePan = Pattern.compile("\\b[A-Za-z]{5}[0-9]{4}[A-Za-z]\\b");
-            Matcher flexMatcher = flexiblePan.matcher(content);
-            if (flexMatcher.find()) {
-                String panNumber = flexMatcher.group();
-                logger.info("Found potential PAN card number (flexible): {}", panNumber);
-                return panNumber.toUpperCase();
+
+        int keywordHits = 0;
+        List<String> panKeywords = DOCUMENT_KEYWORDS.get("PAN");
+        if (panKeywords != null) {
+            for (String kw : panKeywords) {
+                if (kw != null && !kw.isBlank() && contentLower.contains(kw.toLowerCase())) {
+                    keywordHits++;
+                }
             }
-            
-            logger.info("PAN keywords found but no valid PAN number format detected");
-            return "PAN_KEYWORD_FOUND";
         }
-        
-        logger.debug("No PAN keywords or PAN number found in content");
+
+        // Accept if strong context present OR at least 2 PAN keywords present.
+        if (hasStrongContext || keywordHits >= 2) {
+            logger.info("Valid PAN detected with context (hits={}, strongContext={}): {}", keywordHits, hasStrongContext, pan);
+            return pan;
+        }
+
+        logger.warn("PAN-like pattern found but missing context (hits={}, strongContext={})", keywordHits, hasStrongContext);
         return null;
     }
 
-   
+    // Try case-insensitive search for PAN number in original content
+    Pattern panPatternCaseInsensitive = Pattern.compile("\\b[A-Za-z]{5}[0-9]{4}[A-Za-z]\\b");
+    Matcher matcher2 = panPatternCaseInsensitive.matcher(content);
+    if (matcher2.find()) {
+        String pan = matcher2.group().toUpperCase();
+        boolean hasStrongContext = false;
+        for (String ctx : strongPanContext) {
+            if (contentLower.contains(ctx)) {
+                hasStrongContext = true;
+                break;
+            }
+        }
+
+        int keywordHits = 0;
+        List<String> panKeywords = DOCUMENT_KEYWORDS.get("PAN");
+        if (panKeywords != null) {
+            for (String kw : panKeywords) {
+                if (kw != null && !kw.isBlank() && contentLower.contains(kw.toLowerCase())) {
+                    keywordHits++;
+                }
+            }
+        }
+
+        if (hasStrongContext || keywordHits >= 2) {
+            logger.info("Valid PAN detected with context (hits={}, strongContext={}): {}", keywordHits, hasStrongContext, pan);
+            return pan;
+        }
+
+        logger.warn("PAN-like token found but missing context (hits={}, strongContext={})", keywordHits, hasStrongContext);
+        return null;
+    }
+
+    //  Fallback → keyword detection
+    // Only accept keyword-only if there is strong context AND at least 2 PAN keywords.
+    int keywordHits = 0;
+    List<String> panKeywords = DOCUMENT_KEYWORDS.get("PAN");
+    if (panKeywords != null) {
+        for (String kw : panKeywords) {
+            if (kw != null && !kw.isBlank() && contentLower.contains(kw.toLowerCase())) {
+                keywordHits++;
+            }
+        }
+    }
+    boolean hasStrongContext = false;
+    for (String ctx : strongPanContext) {
+        if (contentLower.contains(ctx)) {
+            hasStrongContext = true;
+            break;
+        }
+    }
+    if (hasStrongContext && keywordHits >= 2) {
+        logger.info("⚠ PAN keywords detected with strong context but PAN number unclear (hits={})", keywordHits);
+        return "PAN_KEYWORD_FOUND";
+    }
+
+    logger.warn(" PAN not detected");
+    return null;
+}
+
     public String validateAadharCardInContent(String content) {
-        if (content == null || content.isEmpty()) {
+        if (content == null) return null;
+
+        String contentLower = content.toLowerCase();
+
+        // Aadhaar numbers (12 digits) can appear in other contexts; require Aadhaar context.
+        // Strong context keywords
+        List<String> strongAadhaarContext = Arrays.asList("uidai", "aadhaar", "aadhar", "unique identification");
+
+        boolean hasContext = false;
+        for (String ctx : strongAadhaarContext) {
+            if (contentLower.contains(ctx)) {
+                hasContext = true;
+                break;
+            }
+        }
+
+        // Count keyword hits
+        int keywordHits = 0;
+        List<String> aadhaarKeywords = DOCUMENT_KEYWORDS.get("AADHAAR");
+        if (aadhaarKeywords != null) {
+            for (String kw : aadhaarKeywords) {
+                if (kw != null && !kw.isBlank() && contentLower.contains(kw.toLowerCase())) {
+                    keywordHits++;
+                }
+            }
+        }
+
+        Matcher matcher = AADHAAR_PATTERN.matcher(content);
+        if (matcher.find()) {
+            String aadhaar = matcher.group().replaceAll("[\\s-]", "");
+
+            // Accept only if context present OR multiple Aadhaar keywords present
+            if (hasContext || keywordHits >= 2) {
+                logger.info("Valid Aadhaar detected with context (hits={}, strongContext={}): {}", keywordHits, hasContext, aadhaar);
+                return aadhaar;
+            }
+
+            logger.warn("Aadhaar-like 12-digit number found but missing context (hits={}, strongContext={})", keywordHits, hasContext);
             return null;
         }
-        
-     
-        Matcher matcher = AADHAR_CARD_PATTERN.matcher(content);
-        if (matcher.find()) {
-            String aadharNumber = matcher.group();
-            logger.info("Found valid Aadhaar card number: {}", aadharNumber);
-            return aadharNumber;
+
+        // Keyword-only fallback (only if context is present + at least 2 keyword hits)
+        if (hasContext && keywordHits >= 2) {
+            logger.info("⚠ Aadhaar keywords detected with strong context but number unclear (hits={})", keywordHits);
+            return "AADHAAR_KEYWORD_FOUND";
         }
+
+        return null;
+    }
+
+    public String validateGSTInContent(String content) {
+        if (content == null) return null;
+
+        Matcher matcher = GSTIN_PATTERN.matcher(content);
+        if (matcher.find()) {
+            String gstin = matcher.group();
+            logger.info("Valid GSTIN detected: {}", gstin);
+            return gstin;
+        }
+
+        return containsKeyword(content, DOCUMENT_KEYWORDS.get("GST"))
+                ? "GST_KEYWORD_FOUND"
+                : null;
+    }
+
+    public String validateIncomeTaxInContent(String content) {
+        if (content == null) return null;
+
+        return containsKeyword(content, DOCUMENT_KEYWORDS.get("INCOME_TAX"))
+                ? "INCOME_TAX_FOUND"
+                : null;
+    }
+
+    public String validateExperienceCertificateInContent(String content) {
+        if (content == null || content.isBlank()) return null;
+
+        // First try explicit experience keywords (fast path)
+        if (containsKeyword(content, DOCUMENT_KEYWORDS.get("EXPERIENCE"))) {
+            return "EXPERIENCE_FOUND";
+        }
+
+        // OCR can miss "experience certificate" but still include strong employment phrasing.
+        String lower = content.toLowerCase();
+
+        int evidence = 0;
+        boolean hasDate = DATE_PATTERN.matcher(content).find();
+
+        if (lower.contains("experience")) evidence += 2;
+        if (lower.contains("worked as") || lower.contains("has worked") || lower.contains("worked with")
+                || lower.contains("employed as") || lower.contains("employment")) evidence += 1;
+        if (lower.contains("designation") || lower.contains("position") || lower.contains("job title")
+                || lower.contains("role")) evidence += 1;
+        if ((lower.contains("from") && lower.contains("to")) || lower.contains("joining")
+                || lower.contains("relieving") || lower.contains("tenure") || lower.contains("period")) evidence += 1;
+        if (hasDate) evidence += 1;
+
+        // Accept if we have enough employment signals; require a date unless "experience" is present.
+        if (evidence >= 3 && (hasDate || lower.contains("experience"))) {
+            return "EXPERIENCE_FOUND";
+        }
+
+        return null;
+    }
+
+    public String validateCompanyRegistrationInContent(String content) {
+        if (content == null) return null;
+
+        // Prefer CIN match (more reliable)
+        Matcher cinMatcher = CIN_PATTERN.matcher(content);
+        if (cinMatcher.find()) {
+            String cin = cinMatcher.group().toUpperCase();
+            logger.info("Valid CIN detected: {}", cin);
+            return cin;
+        }
+
+        return containsKeyword(content, DOCUMENT_KEYWORDS.get("COMPANY_REG"))
+                ? "COMPANY_REG_FOUND"
+                : null;
+    }
+
+    public String validateInsuranceInContent(String content) {
+        if (content == null) return null;
+
+        return containsKeyword(content, DOCUMENT_KEYWORDS.get("INSURANCE"))
+                ? "INSURANCE_FOUND"
+                : null;
+    }
+
+    /**
+     * Check if content matches required document using rule-based validation
+     * Requires at least 2 keyword matches for proper validation
+     */
+    public boolean checkContentMatch(String requiredDoc, List<String> keywords, String fileName, String content) {
+        if (content == null || content.isEmpty()) return false;
         
-        
-        String cleanContent = content.replaceAll("[\\s-]", "");
-        if (cleanContent.length() >= 12) {
-            Pattern twelveDigits = Pattern.compile("\\b\\d{12}\\b");
-            Matcher m = twelveDigits.matcher(cleanContent);
-            if (m.find()) {
-                String aadharNumber = m.group();
-                logger.info("Found Aadhaar card number (cleaned): {}", aadharNumber);
-                return aadharNumber;
-            }
+        // If no keywords, check document name in content
+        if (keywords == null || keywords.isEmpty()) {
+            return content.toLowerCase().contains(requiredDoc.toLowerCase());
         }
         
         String contentLower = content.toLowerCase();
-        List<String> aadharKeywords = DOCUMENT_KEYWORDS.get("AADHAR");
-        for (String keyword : aadharKeywords) {
-            if (contentLower.contains(keyword)) {
-                logger.info("Found Aadhaar keyword: {}", keyword);
-                return "AADHAR_KEYWORD_FOUND";
+
+        // If required document name itself is present, consider it a match
+        if (requiredDoc != null && !requiredDoc.isBlank() && contentLower.contains(requiredDoc.toLowerCase())) {
+            return true;
+        }
+
+        int matches = 0;
+        for (String keyword : keywords) {
+            if (keyword == null) continue;
+            String kw = keyword.toLowerCase().trim();
+            if (kw.isEmpty()) continue;
+            if (contentLower.contains(kw)) {
+                matches++;
             }
         }
-        
-        logger.debug("No Aadhaar keywords or Aadhaar number found in content");
-        return null;
+
+        // OCR text can be noisy; requiring 2 matches is often too strict.
+        // Use a dynamic threshold: at least 1 match for small keyword sets,
+        // 2 matches for larger keyword sets.
+        int threshold = (keywords.size() >= 6) ? 2 : 1;
+        return matches >= threshold;
     }
 
-   
-    public double calculateSimilarity(String s1, String s2) {
-        if (s1.equals(s2)) return 1.0;
-        if (s1.length() == 0 || s2.length() == 0) return 0.0;
+    private boolean containsKeyword(String content, List<String> keywords) {
+        if (content == null || keywords == null) return false;
 
-        Set<String> set1 = new HashSet<>(Arrays.asList(s1.split("[\\s,_-]+")));
-        Set<String> set2 = new HashSet<>(Arrays.asList(s2.split("[\\s,_-]+")));
+        String lower = content.toLowerCase();
 
-        Set<String> intersection = new HashSet<>(set1);
-        intersection.retainAll(set2);
+        for (String kw : keywords) {
+            if (lower.contains(kw.toLowerCase())) {
+                logger.info("Keyword '{}' detected", kw);
+                return true;
+            }
+        }
+        return false;
+    }
 
-        Set<String> union = new HashSet<>(set1);
-        union.addAll(set2);
+    /**
+     * Inner class to define document templates with required fields
+     */
+    public static class DocumentTemplate {
+        private String documentType;
+        private Map<String, List<String>> requiredFields = new HashMap<>();
+        private String numberPattern;
 
-        return (double) intersection.size() / union.size();
+        public DocumentTemplate(String documentType) {
+            this.documentType = documentType;
+        }
+
+        public void addRequiredField(String fieldName, List<String> keywords) {
+            requiredFields.put(fieldName, keywords);
+        }
+
+        public String getDocumentType() { return documentType; }
+        public Map<String, List<String>> getRequiredFields() { return requiredFields; }
+        public String getNumberPattern() { return numberPattern; }
+        public void setNumberPattern(String pattern) { this.numberPattern = pattern; }
+    }
+
+    /**
+     * Result class for comprehensive document validation
+     */
+    public static class DocumentValidationResult {
+        private boolean valid;
+        private String documentType;
+        private String documentNumber;
+        private String message;
+        private String errorMessage;
+        private double validationScore;
+        private List<String> validatedFields = new ArrayList<>();
+        private List<String> missingFields = new ArrayList<>();
+
+        public boolean isValid() { return valid; }
+        public void setValid(boolean valid) { this.valid = valid; }
+        public String getDocumentType() { return documentType; }
+        public void setDocumentType(String documentType) { this.documentType = documentType; }
+        public String getDocumentNumber() { return documentNumber; }
+        public void setDocumentNumber(String documentNumber) { this.documentNumber = documentNumber; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        public String getErrorMessage() { return errorMessage; }
+        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+        public double getValidationScore() { return validationScore; }
+        public void setValidationScore(double validationScore) { this.validationScore = validationScore; }
+        public List<String> getValidatedFields() { return validatedFields; }
+        public List<String> getMissingFields() { return missingFields; }
+
+        @Override
+        public String toString() {
+            return "DocumentValidationResult{" +
+                    "valid=" + valid +
+                    ", documentType='" + documentType + '\'' +
+                    ", documentNumber='" + documentNumber + '\'' +
+                    ", validationScore=" + validationScore +
+                    ", validatedFields=" + validatedFields +
+                    ", missingFields=" + missingFields +
+                    '}';
+        }
     }
 }

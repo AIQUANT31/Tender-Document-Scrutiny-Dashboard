@@ -1,7 +1,9 @@
 package com.example.dto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ValidationResult {
@@ -12,6 +14,8 @@ public class ValidationResult {
     private List<String> warnings = new ArrayList<>();
     private List<String> duplicateDocuments = new ArrayList<>();
     private String message;
+    // Detailed validation information for each document
+    private Map<String, DocumentValidationDetail> documentDetails = new HashMap<>();
 
     public ValidationResult() {
     }
@@ -82,5 +86,18 @@ public class ValidationResult {
     
     public int getMissingCount() {
         return missingDocuments != null ? missingDocuments.size() : 0;
+    }
+
+    // Document details getters and setters
+    public Map<String, DocumentValidationDetail> getDocumentDetails() {
+        return documentDetails;
+    }
+
+    public void setDocumentDetails(Map<String, DocumentValidationDetail> documentDetails) {
+        this.documentDetails = documentDetails;
+    }
+
+    public void addDocumentDetail(String filename, DocumentValidationDetail detail) {
+        this.documentDetails.put(filename, detail);
     }
 }

@@ -112,12 +112,6 @@
         Close Tender
       </button>
       <button 
-        *ngIf="isCreator() && getTenderStatus() === 'CLOSED'" 
-        class="btn btn-success" 
-        (click)="reopenTender()">
-        Reopen Tender
-      </button>
-      <button 
         *ngIf="isCreator()" 
         class="btn btn-danger" 
         (click)="deleteTender()">

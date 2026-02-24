@@ -2,16 +2,14 @@
   <app-nav></app-nav>
   
   <main class="bidder-content">
-    <!-- Bidder Header Component -->
+   
     <app-bidder-header 
       [bidders]="bidders"
       (addBidder)="addBidder()">
     </app-bidder-header>
 
-    <!-- Bidder Stats Component -->
     <app-bidder-stats [bidders]="bidders"></app-bidder-stats>
 
-    <!-- My Bids Component -->
     <app-my-bids 
       [myBids]="myBids"
       [loadingMyBids]="loadingMyBids"
@@ -23,7 +21,7 @@
       Loading bidders...
     </div> -->
 
-    <!-- Bidder Table Component -->
+   
     <app-bidder-table 
       *ngIf="!loading && bidders.length > 0"
       [bidders]="bidders"
@@ -34,14 +32,13 @@
       (error)="onError($event)">
     </app-bidder-table>
 
-    <!-- Empty State -->
+  
     <div class="empty-state" *ngIf="!loading && bidders.length === 0">
       <p>You don't have any bidder profile yet.</p>
       <button class="add-btn" (click)="addBidder()">+ Add New Bidder</button>
     </div>
   </main>
 
-  <!-- Bidder Form Modal Component -->
   <app-bidder-form 
     [showBidderForm]="showBidderForm"
     [isEditing]="isEditing"
@@ -52,7 +49,7 @@
     (formClose)="onBidderCancel()">
   </app-bidder-form>
 
-  <!-- Bidder Detail Modal Component -->
+
   <app-bidder-detail 
     [showBidderDetail]="showBidderDetail"
     [bidderId]="selectedBidderId"

@@ -11,13 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 
-/**
- * Main document validation service that orchestrates validation using
- * ContentValidationService for content-based document validation.
- * 
- * This service acts as a facade/entry point that delegates to specialized
- * validation implementations.
- */
+
 @Service
 public class DocumentValidationService {
 
@@ -55,7 +49,7 @@ public class DocumentValidationService {
         return contentValidationService.validateWithRules(requiredDocuments, files);
     }
 
-    // ===Utility Methods ===
+  
 
   
     public List<String> getFileNames(MultipartFile[] files) {

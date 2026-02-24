@@ -308,38 +308,17 @@ export class PlaceBidComponent implements OnInit {
       formData.append('contactNumber', this.contactNumber);
       formData.append('status', 'PENDING');
       
-    
-      formData.append('file', this.selectedBidFiles[0]);
+      // Send all selected PDFs in one request
+      for (const file of this.selectedBidFiles) {
+        formData.append('files', file);
+      }
 
       this.http.post<any>('http://localhost:8080/api/bids/create-with-document', formData).subscribe({
         next: (response) => {
             console.log('Bid response:', response);
           if (response.success) {
-            
-            
-            if (this.selectedBidFiles.length > 1) {
-              const additionalFiles = this.selectedBidFiles.slice(1);
-              const docFormData = new FormData();
-              for (const file of additionalFiles) {
-                docFormData.append('files', file);
-              }
-              
-              this.http.post<any>(`http://localhost:8080/api/bids/add-documents/${response.bid.id}`, docFormData).subscribe({
-                next: (docResponse) => {
-                  console.log('Additional documents uploaded:', docResponse);
-                  alert('Bid placed successfully with ' + this.selectedBidFiles.length + ' documents!');
-                  this.router.navigate(['/tender']);
-                },
-                error: (docError) => {
-                  console.error('Error uploading additional documents:', docError);
-                  alert('Bid placed but some documents could not be uploaded. You can add them later.');
-                  this.router.navigate(['/tender']);
-                }
-              });
-            } else {
-              alert('Bid placed successfully with document!');
-              this.router.navigate(['/tender']);
-            }
+            alert('Bid placed successfully with ' + this.selectedBidFiles.length + ' document(s)!');
+            this.router.navigate(['/tender']);
           } else {
             this.bidError = response.message || 'Error placing bid';
           }

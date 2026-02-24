@@ -1,4 +1,4 @@
-/* Dashboard Activity Component Styles */
+
 .recent-activity-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

@@ -95,18 +95,7 @@
         </app-bid-document-upload>
       
       <div class="validation-result" *ngIf="documentValidationResult && !isValidatingDocuments">
-        <p *ngIf="documentValidationResult.valid" class="valid">✓ {{ documentValidationResult.message }}</p>
-        <p *ngIf="!documentValidationResult.valid" class="invalid">✗ {{ documentValidationResult.message }}</p>
-        
-        <!-- Show duplicate documents warning -->
-        <div *ngIf="documentValidationResult.duplicateDocuments && documentValidationResult.duplicateDocuments.length > 0" class="duplicate-warning">
-          <p class="warning">⚠ Duplicate documents detected:</p>
-          <ul>
-            <li *ngFor="let dup of documentValidationResult.duplicateDocuments">{{ dup }}</li>
-          </ul>
-        </div>
-        
-        <!-- Show matched documents -->
+        <!-- Keep the UI simple: show only validated + missing documents -->
         <div *ngIf="documentValidationResult.matchedDocuments && documentValidationResult.matchedDocuments.length > 0" class="matched-docs">
           <p>Validated documents:</p>
           <ul>
@@ -114,17 +103,11 @@
           </ul>
         </div>
         
-        <!-- Show missing documents -->
         <div *ngIf="documentValidationResult.missingDocuments && documentValidationResult.missingDocuments.length > 0" class="missing-docs">
           <p>Missing documents:</p>
           <ul>
             <li *ngFor="let doc of documentValidationResult.missingDocuments">{{ doc }}</li>
           </ul>
-        </div>
-        
-        <!-- Show warnings -->
-        <div *ngIf="documentValidationResult.warnings && documentValidationResult.warnings.length > 0" class="validation-warnings">
-          <p *ngFor="let warning of documentValidationResult.warnings" class="warning-text">⚠️ {{ warning }}</p>
         </div>
       </div>
       
@@ -138,7 +121,7 @@
           </button>
         </div>
         
-        <!-- Navigation after successful bid -->
+        
         <div class="bid-success-actions" *ngIf="createdBidId">
           <button class="btn btn-primary" (click)="goBack()">Back to Tenders</button>
         </div>

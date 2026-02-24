@@ -43,53 +43,24 @@ export class TenderFormComponent implements OnChanges {
   formError = false;
   selectedCategory = '';
 
-  // Category-based document requirements
+  // Common required documents for all categories
+  commonRequiredDocuments = [
+    'PAN Card',
+    'Aadhaar Card',
+    'GST Registration',
+    'Income Tax Clearance',
+    'Company Registration',
+    'Experience Certificates',
+    'Insurance Certificate'
+  ];
+
+  // Category-based document requirements - uses common documents
   categoryDocuments: { [key: string]: string[] } = {
-    construction: [
-      'Technical Specifications',
-      'Financial Proposal',
-      'Company Registration',
-      'Tax Clearance',
-      'Experience Certificates',
-      'Equipment List',
-      'Safety Certificates'
-    ],
-    infrastructure: [
-      'Technical Specifications',
-      'Financial Proposal',
-      'Company Registration',
-      'Tax Clearance',
-      'Experience Certificates',
-      'Environmental Impact Assessment',
-      'Permits and Licenses'
-    ],
-    engineering: [
-      'Technical Specifications',
-      'Financial Proposal',
-      'Company Registration',
-      'Tax Clearance',
-      'Professional Certifications',
-      'Experience Certificates',
-      'Engineering Licenses'
-    ],
-    renovation: [
-      'Technical Specifications',
-      'Financial Proposal',
-      'Company Registration',
-      'Tax Clearance',
-      'Experience Certificates',
-      'Portfolio of Previous Work',
-      'Insurance Certificate'
-    ],
-    maintenance: [
-      'Technical Specifications',
-      'Financial Proposal',
-      'Company Registration',
-      'Tax Clearance',
-      'Service Level Agreements',
-      'Experience Certificates',
-      'Equipment List'
-    ]
+    construction: this.commonRequiredDocuments,
+    infrastructure: this.commonRequiredDocuments,
+    engineering: this.commonRequiredDocuments,
+    renovation: this.commonRequiredDocuments,
+    maintenance: this.commonRequiredDocuments
   };
 
   get currentCategoryDocuments(): string[] {
@@ -112,16 +83,7 @@ export class TenderFormComponent implements OnChanges {
     return !!this.selectedCategory;
   }
 
-  predefinedDocuments = [
-    'Technical Specifications',
-    'Financial Proposal',
-    'Company Registration',
-    'Tax Clearance',
-    'Experience Certificates',
-    'Bank Statement',
-    'Power of Attorney',
-    'Letter of Intent'
-  ];
+  predefinedDocuments = this.commonRequiredDocuments;
 
   isValidForm(): boolean {
     this.formError = false;

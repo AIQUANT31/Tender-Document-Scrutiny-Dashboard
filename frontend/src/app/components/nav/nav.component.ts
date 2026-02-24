@@ -45,7 +45,7 @@ export class NavComponent {
   }
 
   onProfileSave() {
-    // Update username in navbar
+ 
     this.username = localStorage.getItem('username') || 'User';
   }
 

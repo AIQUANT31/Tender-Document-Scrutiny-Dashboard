@@ -35,10 +35,6 @@ public class BidDocumentController {
 
     @Autowired
     private BidService bidService;
-
-    /**
-     * Create bid with document
-     */
     @PostMapping(value = "/create-with-document", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> createBidWithDocument(
             @RequestParam("tenderId") Long tenderId,
@@ -47,12 +43,14 @@ public class BidDocumentController {
             @RequestParam(value = "proposalText", required = false) String proposalText,
                         @RequestParam(value = "contactNumber", required = false) String contactNumber,
             @RequestParam(value = "status", defaultValue = "PENDING") String status,
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            // Backward-compat: older clients still send `file`
             @RequestParam(value = "file", required = false) MultipartFile file) {
         
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // Create bid request
+         
             com.example.dto.BidRequest request = new com.example.dto.BidRequest();
             request.setTenderId(tenderId);
             request.setBidderId(bidderId);
@@ -61,7 +59,7 @@ public class BidDocumentController {
             request.setContactNumber(contactNumber);
             request.setStatus(status);
             
-            // Create bid first
+            
             Map<String, Object> bidResponse = bidService.createBid(request);
             
             if (!(Boolean) bidResponse.get("success")) {
@@ -70,20 +68,40 @@ public class BidDocumentController {
             
             Bid savedBid = (Bid) bidResponse.get("bid");
             
-            // If file is provided, save it
-            if (file != null && !file.isEmpty()) {
-                // Validate and save file
-                String docPath = validateAndSaveFile(file, savedBid.getId());
-                if (docPath == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("success", false, "message", "Invalid file type or size"));
+            // Save all provided files (supports both `files[]` and legacy `file`)
+            List<MultipartFile> allFiles = new ArrayList<>();
+            if (files != null) {
+                for (MultipartFile f : files) {
+                    if (f != null && !f.isEmpty()) allFiles.add(f);
                 }
-                
-                // Update bid with document path
-                savedBid.setDocumentPath(docPath);
-                                bidService.saveBid(savedBid);
-                
-                bidResponse.put("documentPath", docPath);
+            }
+            if (file != null && !file.isEmpty()) {
+                allFiles.add(file);
+            }
+
+            if (!allFiles.isEmpty()) {
+                List<String> savedDocPaths = new ArrayList<>();
+
+                for (MultipartFile f : allFiles) {
+                    if (!isValidPdfFile(f, 50 * 1024 * 1024)) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("success", false, "message", "Only PDF files under 50MB are allowed"));
+                    }
+
+                    String docPath = saveFile(f, "bid_" + savedBid.getId());
+                    savedDocPaths.add(docPath);
+                }
+
+                // Keep `documentPath` for existing UI, but also store the full list in `documentPaths`
+                if (!savedDocPaths.isEmpty()) {
+                    savedBid.setDocumentPath(savedDocPaths.get(0));
+                }
+                String jsonPaths = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(savedDocPaths);
+                savedBid.setDocumentPaths(jsonPaths);
+                bidService.saveBid(savedBid);
+
+                bidResponse.put("documentPath", savedBid.getDocumentPath());
+                bidResponse.put("documentPaths", jsonPaths);
             }
             
             return ResponseEntity.ok(bidResponse);
@@ -96,9 +114,6 @@ public class BidDocumentController {
         }
     }
 
-    /**
-     * Add documents to existing bid
-     */
     @PostMapping(value = "/add-documents/{bidId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> addDocumentsToBid(
             @PathVariable Long bidId,
@@ -114,13 +129,13 @@ public class BidDocumentController {
                     .body(Map.of("success", false, "message", "Bid not found"));
             }
             
-            // Get existing paths
+        
             List<String> allPaths = parseDocumentPaths(bid.getDocumentPaths());
 
             for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
                 
-                // Validate file
+              
                 if (!isValidPdfFile(file, 50 * 1024 * 1024)) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("success", false, "message", "Only PDF files under 50MB are allowed"));
@@ -312,16 +327,9 @@ public class BidDocumentController {
         }
     }
 
-    // ==================== Helper Methods ====================
-
     private String validateAndSaveFile(MultipartFile file, Long bidId) throws IOException {
         // Validate file type
-        if (!file.getContentType().equals("application/pdf")) {
-            return null;
-        }
-
-        // Validate file size (max 10MB)
-        if (file.getSize() > 10 * 1024 * 1024) {
+        if (!isValidPdfFile(file, 10 * 1024 * 1024)) {
             return null;
         }
 
@@ -329,7 +337,12 @@ public class BidDocumentController {
     }
 
     private boolean isValidPdfFile(MultipartFile file, long maxSize) {
-        return file.getContentType().equals("application/pdf") && file.getSize() <= maxSize;
+        if (file == null || file.isEmpty()) return false;
+        String contentType = file.getContentType();
+        String originalFilename = file.getOriginalFilename();
+        boolean isPdfByContentType = "application/pdf".equalsIgnoreCase(contentType);
+        boolean isPdfByExtension = originalFilename != null && originalFilename.toLowerCase().endsWith(".pdf");
+        return (isPdfByContentType || isPdfByExtension) && file.getSize() <= maxSize;
     }
 
     private String saveFile(MultipartFile file, String prefix) throws IOException {

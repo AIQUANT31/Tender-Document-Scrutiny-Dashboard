@@ -1,20 +1,24 @@
 package com.example.services;
 
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+/**
+ * PDF Text Extractor using OCR only (no PDFBox text extraction)
+ * This service delegates to OcrService for text extraction
+ */
 @Service
 public class PdfTextExtractor {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfTextExtractor.class);
+    
+    private final OcrService ocrService;
+
+    public PdfTextExtractor(OcrService ocrService) {
+        this.ocrService = ocrService;
+    }
 
     public String extractText(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -26,16 +30,14 @@ public class PdfTextExtractor {
             return "Error: Not a PDF file";
         }
         
-        try (InputStream inputStream = file.getInputStream();
-             PDDocument document = Loader.loadPDF(inputStream.readAllBytes())) {
+        try {
+            // Use OCR service for text extraction (no PDFBox text extraction)
+            String text = ocrService.extractText(file);
             
-            PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(document);
-            
-            logger.info("Extracted {} characters from PDF", text.length());
+            logger.info("Extracted {} characters from PDF using OCR", text.length());
             return text;
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error extracting PDF text: ", e);
             return "Error: " + e.getMessage();
         }

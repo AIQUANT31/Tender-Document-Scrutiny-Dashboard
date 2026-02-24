@@ -38,9 +38,9 @@ export class Bidder implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Check if we're in the browser (client-side)
+    
     if (isPlatformBrowser(this.platformId)) {
-      // Get userId from localStorage on client-side
+      
       const storedUserId = localStorage.getItem('userId');
       this.userId = storedUserId ? parseInt(storedUserId, 10) : 0;
       console.log('Bidder page loaded, userId:', this.userId);
@@ -58,7 +58,7 @@ export class Bidder implements OnInit {
     this.loading = true;
     console.log('Fetching bidders from API...');
     
-    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    
     setTimeout(() => {
       this.http.get<BidderData[]>(`http://localhost:8080/api/bidders/user/${this.userId}`).subscribe({
         next: (data) => {
@@ -94,7 +94,7 @@ export class Bidder implements OnInit {
     return p.length >= 6 ? new Date(+p[0], +p[1] - 1, +p[2], +p[3], +p[4], +p[5]).toISOString() : s;
   }
 
-  // Form Methods
+  
   addBidder() { this.isEditing = false; this.selectedBidder = null; this.formData = { ...DEFAULT_BIDDER_FORM_DATA }; this.showBidderForm = true; }
   editBidder(b: BidderData) { this.isEditing = true; this.selectedBidder = b; this.formData = { companyName: b.companyName, email: b.email, phone: b.phone || '', type: b.type || 'Construction', address: b.address || '', contactPerson: b.contactPerson || '', status: b.status }; this.showBidderForm = true; }
   onBidderSubmit(f: BidderFormData) { this.isEditing && this.selectedBidder ? this.updateBidder(f) : this.createBidder(f); }
@@ -117,7 +117,7 @@ export class Bidder implements OnInit {
   }
 
 
-  // Table Events
+
   viewBidderDetails(id: number) { this.selectedBidderId = id; this.showBidderDetail = true; }
   onDeleteSuccess() { this.loadBidders(); }
   onError(msg: string) { alert(msg); }

@@ -26,12 +26,11 @@
       </button>
       <button class="dropdown-item logout" (click)="logout()">
         Logout
-      </button>
+      </button> 
     </div>
   </div>
 </nav>
 
-<!-- Sidebar -->
 <div class="sidebar" [class.sidebar-open]="sidebarOpen">
   <div class="sidebar-header">
     <img src="/logo.webp" alt="Logo" class="brand-logo">
@@ -56,10 +55,9 @@
   </div>
 </div>
 
-<!-- Sidebar Overlay -->
 <div class="sidebar-overlay" [class.overlay-visible]="sidebarOpen" (click)="closeSidebar()"></div>
 
-<!-- Profile Update Modal -->
+
 <app-profile-update
   [isOpen]="showProfileUpdate"
   [userId]="userId"

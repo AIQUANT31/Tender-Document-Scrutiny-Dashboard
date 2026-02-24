@@ -118,7 +118,7 @@ public class TenderService {
     @Cacheable(value = "allTenders", unless = "#result == null")
     public List<Tender> getAllTenders() {
         logger.info("Fetching all tenders (Cache Miss - loading from DB)");
-        List<Tender> tenders = tenderRepository.findAll();
+        List<Tender> tenders = tenderRepository.findAllTendersSorted();
         
         // Update status for tenders with expired deadlines
         updateTenderStatusesBasedOnDeadline(tenders);
