@@ -19,9 +19,6 @@ public class DocumentFinder {
     @Autowired
     private KeywordMatcher keywordMatcher;
 
-    @Autowired
-    private OcrService ocrService;
-
     public boolean findDocumentComprehensively(String requiredDoc, 
                                                  Map<String, String> extractedContent, 
                                                  ValidationResult result) {

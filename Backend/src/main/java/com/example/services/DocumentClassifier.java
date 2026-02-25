@@ -18,6 +18,7 @@ public class DocumentClassifier {
     private KeywordMatcher keywordMatcher;
 
     public Map<String, Classification> classifyExtractedContents(Map<String, String> extractedContents) {
+        logger.info("Starting classification of {} documents", extractedContents.size());
         Map<String, Classification> out = new HashMap<>();
 
         for (Map.Entry<String, String> entry : extractedContents.entrySet()) {
@@ -25,6 +26,7 @@ public class DocumentClassifier {
             String content = entry.getValue();
 
             if (content == null || content.startsWith("IMAGE_PDF_FALLBACK") || content.isBlank()) {
+                logger.debug("Skipping file {} - empty or image fallback content", fileName);
                 out.put(fileName, new Classification(fileName, "UNKNOWN", 0, null, false));
                 continue;
             }
@@ -44,15 +46,23 @@ public class DocumentClassifier {
             Score second = scores.get(1);
 
             if (best.score < 50) {
+                logger.debug("Classified file {} as UNKNOWN with score {}", fileName, best.score);
                 out.put(fileName, new Classification(fileName, "UNKNOWN", best.score, best.documentNumber, false));
                 continue;
             }
 
             boolean ambiguous = second.score >= 50 && (best.score - second.score) <= 10;
+            
+            if (ambiguous) {
+                logger.warn("Classification ambiguous for file {}: best={} (score={}), second={} (score={})",
+                    fileName, best.type, best.score, second.type, second.score);
+            }
 
+            logger.info("Classified file {} as {} with score {}", fileName, best.type, best.score);
             out.put(fileName, new Classification(fileName, best.type, best.score, best.documentNumber, ambiguous));
         }
 
+        logger.info("Classification complete. Processed {} documents", out.size());
         return out;
     }
 

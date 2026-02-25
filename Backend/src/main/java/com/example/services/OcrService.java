@@ -60,8 +60,8 @@ public class OcrService {
                 tesseract.setDatapath(tessDataPath);
                 tesseract.setLanguage("eng");
                 
-                tesseract.setTessVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,()-/ ");
-                tesseract.setTessVariable("preserve_interword_spaces", "1");
+                tesseract.setVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,()-/ ");
+                tesseract.setVariable("preserve_interword_spaces", "1");
                 logger.info("✓ Tesseract OCR initialized successfully with path: {}", tessDataPath);
             } else {
                 logger.error("✗ Tesseract tessdata folder NOT found! OCR will not work.");
@@ -165,12 +165,6 @@ public class OcrService {
             return "Error: Could not process large file - " + e.getMessage();
         }
     }
-    private String extractPdfTextFromBytes(byte[] pdfBytes) {
-        
-        logger.info("Skipping embedded text extraction - using OCR only");
-        return "";
-    }
-
     
     private String extractTextWithOcrFromBytes(byte[] pdfBytes, int dpi) {
         StringBuilder fullText = new StringBuilder();
@@ -185,9 +179,10 @@ public class OcrService {
             return "";
         }
 
+        int pageCount = 0;
         try (PDDocument document = Loader.loadPDF(pdfBytes)) {
             PDFRenderer renderer = new PDFRenderer(document);
-            int pageCount = document.getNumberOfPages();
+            pageCount = document.getNumberOfPages();
             
             logger.info("Processing {} pages at {} DPI", pageCount, dpi);
 
@@ -220,7 +215,7 @@ public class OcrService {
         }
 
         String result = fullText.toString().trim();
-        logger.info("Total OCR text extracted: {} characters from {} pages", result.length(), pdfBytes.length);
+        logger.info("Total OCR text extracted: {} characters from {} pages", result.length(), pageCount);
         return result;
     }
 

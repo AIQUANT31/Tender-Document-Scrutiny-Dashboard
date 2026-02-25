@@ -39,5 +39,7 @@ Api testing for the Tender
     Google Documnet Ai   
       Project id  = tender-487906   
 
+
       processsor id=582a9f90ef4a0f0a
 >>>>>>> 4bb4a23 (update code with valiadtion phase)
+POST /api/bids/upload-as-zip
