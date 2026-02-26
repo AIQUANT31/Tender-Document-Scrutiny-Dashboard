@@ -1,4 +1,4 @@
-package com.example.services;
+package com.example.services.document;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -260,6 +260,7 @@ public class OcrService {
                         logger.warn("Error processing page {}: {}", page + 1, e.getMessage());
                     }
                 }
+                
                 
                 
                 if (pageCount > MAX_PAGES_PER_BATCH) {

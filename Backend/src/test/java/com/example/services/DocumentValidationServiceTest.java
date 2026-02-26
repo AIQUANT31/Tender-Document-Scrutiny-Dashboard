@@ -11,6 +11,9 @@ import org.mockito.quality.Strictness;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.dto.ValidationResult;
+import com.example.services.document.DuplicateDetector;
+import com.example.services.document.DocumentValidationService;
+import com.example.services.validation.ContentValidationService;
 
 import java.util.Arrays;
 import java.util.List;

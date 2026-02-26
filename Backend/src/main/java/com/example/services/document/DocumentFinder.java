@@ -1,7 +1,8 @@
-package com.example.services;
+package com.example.services.document;
 
 import com.example.dto.DocumentValidationDetail;
 import com.example.dto.ValidationResult;
+import com.example.services.validation.KeywordMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

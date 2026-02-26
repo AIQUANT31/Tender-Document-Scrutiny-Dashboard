@@ -2,7 +2,7 @@ package com.example.controller;
 
 import com.example.dto.TenderRequest;
 import com.example.entity.Tender;
-import com.example.services.TenderService;
+import com.example.services.tender.TenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

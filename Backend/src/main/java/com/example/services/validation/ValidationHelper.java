@@ -1,6 +1,7 @@
-package com.example.services;
+package com.example.services.validation;
 
 import com.example.dto.ValidationResult;
+import com.example.services.document.DuplicateDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,8 +57,8 @@ public class ValidationHelper {
     }
 
     public void addWarningsForRequiredDocs(Map<String, String> extractedContent,
-                                             ValidationResult result,
-                                             List<String> requiredDocuments) {
+                                         ValidationResult result,
+                                         List<String> requiredDocuments) {
 
         Set<String> requiredKeywords = new HashSet<>();
         for (String doc : requiredDocuments) {
@@ -91,8 +92,8 @@ public class ValidationHelper {
     }
 
     public void addWarningsForUnvalidatedFiles(Map<String, String> extractedContents,
-                                                 ValidationResult result,
-                                                 List<String> requiredDocuments) {
+                                             ValidationResult result,
+                                             List<String> requiredDocuments) {
 
         Set<String> requiredDocKeywords = new HashSet<>();
         for (String doc : requiredDocuments) {

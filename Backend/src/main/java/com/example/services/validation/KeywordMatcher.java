@@ -1,4 +1,4 @@
-package com.example.services;
+package com.example.services.validation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -651,6 +651,7 @@ public class KeywordMatcher {
         
         String contentLower = content.toLowerCase();
 
+        
         
         if (requiredDoc != null && !requiredDoc.isBlank() && contentLower.contains(requiredDoc.toLowerCase())) {
             return true;

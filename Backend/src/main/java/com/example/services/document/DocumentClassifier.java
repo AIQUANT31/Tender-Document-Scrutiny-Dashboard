@@ -1,7 +1,8 @@
-package com.example.services;
+package com.example.services.document;
 
-import com.example.services.ContentValidationModels.Classification;
-import com.example.services.ContentValidationModels.Score;
+import com.example.services.validation.ContentValidationModels.Classification;
+import com.example.services.validation.ContentValidationModels.Score;
+import com.example.services.validation.KeywordMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,26 +41,26 @@ public class DocumentClassifier {
             Score insurance = scoreInsurance(content);
 
             List<Score> scores = Arrays.asList(pan, aadhaar, gst, incomeTax, experience, companyReg, insurance);
-            scores.sort((a, b) -> Integer.compare(b.score, a.score));
+            scores.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
 
             Score best = scores.get(0);
             Score second = scores.get(1);
 
-            if (best.score < 50) {
-                logger.debug("Classified file {} as UNKNOWN with score {}", fileName, best.score);
-                out.put(fileName, new Classification(fileName, "UNKNOWN", best.score, best.documentNumber, false));
+            if (best.getScore() < 50) {
+                logger.debug("Classified file {} as UNKNOWN with score {}", fileName, best.getScore());
+                out.put(fileName, new Classification(fileName, "UNKNOWN", best.getScore(), best.getDocumentNumber(), false));
                 continue;
             }
 
-            boolean ambiguous = second.score >= 50 && (best.score - second.score) <= 10;
+            boolean ambiguous = second.getScore() >= 50 && (best.getScore() - second.getScore()) <= 10;
             
             if (ambiguous) {
                 logger.warn("Classification ambiguous for file {}: best={} (score={}), second={} (score={})",
-                    fileName, best.type, best.score, second.type, second.score);
+                    fileName, best.getType(), best.getScore(), second.getType(), second.getScore());
             }
 
-            logger.info("Classified file {} as {} with score {}", fileName, best.type, best.score);
-            out.put(fileName, new Classification(fileName, best.type, best.score, best.documentNumber, ambiguous));
+            logger.info("Classified file {} as {} with score {}", fileName, best.getType(), best.getScore());
+            out.put(fileName, new Classification(fileName, best.getType(), best.getScore(), best.getDocumentNumber(), ambiguous));
         }
 
         logger.info("Classification complete. Processed {} documents", out.size());
@@ -122,10 +123,10 @@ public class DocumentClassifier {
     public Map<String, List<Classification>> getClassificationsByType(Map<String, Classification> fileClassification) {
         Map<String, List<Classification>> byType = new HashMap<>();
         for (Classification c : fileClassification.values()) {
-            byType.computeIfAbsent(c.type, k -> new ArrayList<>()).add(c);
+            byType.computeIfAbsent(c.getType(), k -> new ArrayList<>()).add(c);
         }
         for (List<Classification> list : byType.values()) {
-            list.sort((a, b) -> Integer.compare(b.score, a.score));
+            list.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
         }
         return byType;
     }

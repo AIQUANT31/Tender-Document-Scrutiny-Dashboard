@@ -1,4 +1,4 @@
-package com.example.services;
+package com.example.services.tender;
 
 import com.example.dto.TenderRequest;
 import com.example.entity.Tender;

@@ -2,6 +2,7 @@ package com.example.services;
 
 import com.example.entity.Tender;
 import com.example.repository.TenderRepository;
+import com.example.services.tender.TenderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

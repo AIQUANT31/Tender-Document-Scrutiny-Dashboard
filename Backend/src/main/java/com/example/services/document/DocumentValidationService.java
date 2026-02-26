@@ -1,6 +1,7 @@
-package com.example.services;
+package com.example.services.document;
 
 import com.example.dto.ValidationResult;
+import com.example.services.validation.ContentValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ public class DocumentValidationService {
     
 
     
+
     public Map<String, List<String>> detectDuplicates(MultipartFile[] files) {
         return duplicateDetector.detectDuplicates(files);
     }

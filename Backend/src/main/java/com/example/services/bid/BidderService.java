@@ -1,4 +1,4 @@
-package com.example.services;
+package com.example.services.bid;
 
 import com.example.dto.BidderRequest;
 import com.example.entity.Bidder;

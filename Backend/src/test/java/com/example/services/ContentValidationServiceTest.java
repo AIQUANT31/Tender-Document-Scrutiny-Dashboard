@@ -1,6 +1,15 @@
 package com.example.services;
 
 import com.example.dto.ValidationResult;
+import com.example.services.document.OcrService;
+import com.example.services.document.TextExtractor;
+import com.example.services.document.DocumentFinder;
+import com.example.services.document.DocumentClassifier;
+import com.example.services.document.DuplicateDetector;
+import com.example.services.validation.ContentValidationService;
+import com.example.services.validation.ContentValidationModels.Classification;
+import com.example.services.validation.KeywordMatcher;
+import com.example.services.validation.ValidationHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

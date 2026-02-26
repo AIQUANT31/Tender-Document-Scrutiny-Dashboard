@@ -1,8 +1,8 @@
 package com.example.controller;
 
 import com.example.entity.Bid;
-import com.example.services.BidService;
-import com.example.services.ZipFileService;
+import com.example.services.bid.BidService;
+import com.example.services.document.ZipFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,7 +2,7 @@ package com.example.controller;
 
 import com.example.dto.LoginRequest;
 import com.example.dto.SignupRequest;
-import com.example.services.AuthServices;
+import com.example.services.auth.AuthServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

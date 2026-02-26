@@ -1,7 +1,10 @@
-package com.example.services;
+package com.example.services.validation;
 
 import com.example.dto.ValidationResult;
-import com.example.services.ContentValidationModels.Classification;
+import com.example.services.validation.ContentValidationModels.Classification;
+import com.example.services.document.TextExtractor;
+import com.example.services.document.DocumentFinder;
+import com.example.services.document.DocumentClassifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

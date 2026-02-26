@@ -2,7 +2,7 @@ package com.example.controller;
 
 import com.example.dto.BidderRequest;
 import com.example.entity.Bidder;
-import com.example.services.BidderService;
+import com.example.services.bid.BidderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

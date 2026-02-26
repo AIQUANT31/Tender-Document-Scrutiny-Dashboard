@@ -1,4 +1,4 @@
-package com.example.services;
+package com.example.services.dashboard;
 
 import com.example.dto.DashboardResponse;
 import com.example.entity.Bid;
